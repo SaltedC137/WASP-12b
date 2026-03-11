@@ -210,8 +210,8 @@ void Tensor<float>::Padding(const std::vector<uint32_t> &pads,
       return;
   }
   arma::fcube new_data;
-  
-
+  if (padding_value == 0.f) {
+    }
 }
 
 
