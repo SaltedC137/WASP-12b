@@ -275,7 +275,22 @@ void Tensor<float>::Rand() {
 
 
 std::vector<float> Tensor<float>::values(bool row_major) {
-  return std::vector<float>{1};  //finish
+  CHECK_EQ(this->data_.empty(), false);
+  std::vector<float> values(this->data_.size());
+
+  if (!row_major) {
+    std::copy(this->data_.mem, this->data_.mem + this->data_.size(),
+              values.begin());
+  } else {
+    uint32_t index = 0;
+    for (uint32_t it = 0; it < this->data_.n_slices; ++it) {
+      const arma::fmat &channel = this->data_.slice(it).t();
+      std::copy(channel.begin(), channel.end(), values.begin() + index);
+      index += channel.size();
+    }
+    CHECK_EQ(index, values.size());
+  }
+  return values;
 }
 
 
@@ -285,7 +300,6 @@ void Tensor<float>::Show() {
     LOG(INFO) << "\n" << this->data_.slice(it);
     }
 }
-
 
 
 void Tensor<float>::Reshape(const std::vector<uint32_t> &shapes,
@@ -347,7 +361,33 @@ void Tensor<float>::Flatten(bool row_major) {
   this->raw_shape_ = {total_size};
 }
 
+void Tensor<float>::Transform(const std::function<float(float)> &filter) {
+  CHECK(!this->data_.empty());
+  this->data_.transform(filter);
+}
 
+float* Tensor<float>::raw_ptr() {
+  CHECK(!this->data_.empty());
+  return this->data_.memptr();
+}
 
+float* Tensor<float>::raw_ptr(uint32_t offset) {
+  const uint32_t size = this->size();
+  CHECK(!this->data_.empty());
+  CHECK_LT(offset, size);
+  return this->data_.memptr() + offset;
+}
+
+float* Tensor<float>::matrix_raw_ptr(uint32_t index) {
+  CHECK_LT(index, this->channels());
+  uint32_t offset = index * this->rows() * this->cols();
+  CHECK_LE(offset, this->size());
+  float* mem_ptr = this->raw_ptr() + offset;
+  return mem_ptr;
+}
+
+float *Tensor<float>::tensor_raw_ptr(uint32_t index) {
+  return  this->raw_ptr();
+}
 
 }
