@@ -5,7 +5,7 @@
  * @details This header defines a templated Tensor class that supports 1D, 2D, and 3D tensor
  *          operations. The implementation uses Armadillo's fcube (float cube) as the underlying
  *          storage backend, providing efficient memory management and mathematical operations.
- * @date 2026-03-04 11:10:27
+ * @date 2026-03-11 21:28:30
  */
 
 #ifndef TENSOR_HPP_

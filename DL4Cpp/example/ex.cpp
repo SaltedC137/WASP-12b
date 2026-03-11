@@ -2,7 +2,7 @@
  * @file ex.cpp
  * @author Aska Lyn
  * @brief Comprehensive tests for DL4Cpp Tensor library
- * @date 2026-03-11
+ * @date 2026-03-11 21:28:36
  */
 
 #include <iostream>

@@ -5,7 +5,7 @@
  * @details Provides a flexible logging system with multiple severity levels
  *          (DEBUG, INFO, WARNING, ERROR, FATAL). Log messages include timestamps,
  *          source file, and line number information for easy debugging.
- * @date 2026-03-11 19:35:36
+ * @date 2026-03-11 21:28:25
  */
 
 #ifndef LOG_HPP_

@@ -7,7 +7,7 @@
  *          the program logs a FATAL error with detailed information
  *          and aborts execution. These macros are intended for catching
  *          programming errors and invariant violations during development.
- * @date 2026-03-04
+ * @date 2026-03-11 21:28:21
  */
 
 #ifndef CHECK_HPP_
