@@ -1,23 +1,28 @@
 /**
  * @file check.hpp
  * @author Aska Lyn
- * @brief Logging and assertion utilities for DL4Cpp library
- * @details This header provides a CHECK macro system similar to Google's glog library.
- *          When a CHECK condition fails, the program logs a fatal error with file location
- *          and condition details, then aborts execution. Useful for catching programming
- *          errors and validating assumptions during development and debugging.
- * @date 2026-03-04 11:10:27
+ * @brief Assertion utilities for DL4Cpp library
+ * @details Provides CHECK macros for runtime validation of conditions.
+ *          Built on top of log.hpp. When a CHECK condition fails,
+ *          the program logs a FATAL error with detailed information
+ *          and aborts execution. These macros are intended for catching
+ *          programming errors and invariant violations during development.
+ * @date 2026-03-04
  */
 
-#ifndef LOGGING_HPP_
-#define LOGGING_HPP_
+#ifndef CHECK_HPP_
+#define CHECK_HPP_
 
+#include "log.hpp"  // IWYU pragma: export
 
-#include <iostream>
-#include <sstream>
-
-
-/* Compiler-specific branch prediction hints */
+/**
+ * @brief Compiler-specific branch prediction hints
+ * @details LIKELY hints that a condition is expected to be true,
+ *          allowing the compiler to optimize the common case.
+ *          UNLIKELY hints that a condition is expected to be false.
+ *          On GCC/Clang, these use __builtin_expect for optimization.
+ *          On other compilers, they evaluate to the condition unchanged.
+ */
 #if defined(__GNUC__) || defined(__clang__)
     #define LIKELY(x) __builtin_expect(!!(x), 1)
     #define UNLIKELY(x) __builtin_expect(!!(x), 0)
@@ -26,140 +31,112 @@
     #define UNLIKELY(x) (x)
 #endif
 
-
-namespace dlc_inf {
-
 /**
- * @brief Logger class for fatal error messages
- * @details Constructs an error message with file and line information,
- *          then aborts program execution when destroyed.
- */
-class FMessageLogger {
-public:
-    /**
-     * @brief Construct a fatal error logger
-     * @param file The source file name where the error occurred
-     * @param line The line number where the error occurred
-     * @details Initializes the error message with location information.
-     */
-    FMessageLogger(const char* file, int line);
-
-    /**
-     * @brief Destructor - outputs the message and aborts
-     * @details Writes the accumulated message to stderr and terminates
-     *          the program using std::abort().
-     */
-    ~FMessageLogger();
-
-    /**
-     * @brief Get the underlying output stream
-     * @return std::ostream& Reference to the internal string stream
-     * @details Allows appending additional context to the error message.
-     */
-    std::ostream &stream();
-
-private:
-    std::ostringstream stream_;  ///< Internal stream for building the message
-};
-
-/**
- * @brief Voidify helper for ternary operator type matching
- * @details This class is used internally to make the CHECK macro work
- *          with the ternary operator by providing a compatible type
- *          for both branches.
- */
-class FMessageVoidify {
-public:
-    FMessageVoidify() = default;
-    
-    /**
-     * @brief Consume the ostream and discard the result
-     * @param stream The ostream to consume
-     * @details This operator is used to complete the CHECK macro expression
-     *          without producing a value.
-     */
-    void operator&(std::ostream& stream);
-};
-
-} // namespace dlc_inf
-
-
-/**
- * @brief Check a condition and abort if it fails
- * @param conditions The boolean expression to check
- * @details If the condition is false, logs a fatal error with the condition
- *          text and source location, then terminates the program.
- *          Example: CHECK(ptr != nullptr) << "Null pointer!";
+ * @brief Check a general condition
+ * @param conditions The boolean expression to validate
+ * @return void (or no-op if condition is true)
+ * @details If the condition is false, logs a FATAL message with
+ *          the failed expression text and aborts the program.
+ * 
+ * Usage example:
+ * @code
+ * CHECK(!tensor.empty()) << "Tensor must not be empty";
+ * CHECK(ptr != nullptr) << "Null pointer detected";
+ * @endcode
  */
 #define CHECK(conditions)                                                      \
   LIKELY(conditions)                                                           \
   ? (void)0                                                                    \
   : dlc_inf::FMessageVoidify() &                                               \
-          dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                 \
+          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__).stream() \
               << "Check failed: " #conditions " "
-
 
 /**
  * @brief Check equality of two values
- * @param val1 First value to compare
- * @param val2 Second value to compare
- * @details If val1 != val2, logs both values and aborts.
- *          Example: CHECK_EQ(a, b) << "a and b should be equal";
+ * @param val1 The first value to compare
+ * @param val2 The second value to compare
+ * @return void (or no-op if values are equal)
+ * @details If val1 != val2, logs a FATAL message showing both values
+ *          and aborts the program. Useful for validating expected results.
+ * 
+ * Usage example:
+ * @code
+ * CHECK_EQ(tensor.size(), expected_size);
+ * CHECK_EQ(status, 0);
+ * @endcode
  */
 #define CHECK_EQ(val1, val2)                                                   \
   LIKELY((val1) == (val2))                                                     \
   ? (void)0                                                                    \
   : dlc_inf::FMessageVoidify() &                                               \
-          dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                 \
+          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__).stream() \
               << "Check failed: " #val1 " == " #val2 " (" << (val1) << " vs "  \
               << (val2) << ") "
 
-
 /**
  * @brief Check that val1 is less than val2
- * @param val1 First value (should be smaller)
- * @param val2 Second value (should be larger)
- * @details If val1 >= val2, logs both values and aborts.
- *          Example: CHECK_LT(index, size) << "Index out of bounds";
+ * @param val1 The first value to compare
+ * @param val2 The second value to compare
+ * @return void (or no-op if val1 < val2)
+ * @details If val1 >= val2, logs a FATAL message showing both values
+ *          and aborts the program. Useful for bounds checking.
+ * 
+ * Usage example:
+ * @code
+ * CHECK_LT(index, array_size);
+ * CHECK_LT(batch_size, max_batch_size);
+ * @endcode
  */
 #define CHECK_LT(val1, val2)                                                   \
   LIKELY((val1) < (val2))                                                      \
   ? (void)0                                                                    \
   : dlc_inf::FMessageVoidify() &                                               \
-          dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                 \
+          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__).stream() \
               << "Check failed: " #val1 " < " #val2 " (" << (val1) << " vs "   \
               << (val2) << ") "
 
-
 /**
  * @brief Check that val1 is less than or equal to val2
- * @param val1 First value
- * @param val2 Second value
- * @details If val1 > val2, logs both values and aborts.
- *          Example: CHECK_LE(used, capacity) << "Capacity exceeded";
+ * @param val1 The first value to compare
+ * @param val2 The second value to compare
+ * @return void (or no-op if val1 <= val2)
+ * @details If val1 > val2, logs a FATAL message showing both values
+ *          and aborts the program.
+ * 
+ * Usage example:
+ * @code
+ * CHECK_LE(current_size, max_size);
+ * CHECK_LE(score, max_score);
+ * @endcode
  */
 #define CHECK_LE(val1, val2)                                                   \
   LIKELY((val1) <= (val2))                                                     \
   ? (void)0                                                                    \
   : dlc_inf::FMessageVoidify() &                                               \
-          dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                 \
+          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__).stream() \
               << "Check failed: " #val1 " <= " #val2 " (" << (val1) << " vs "  \
               << (val2) << ") "
 
-
 /**
  * @brief Check that val1 is greater than or equal to val2
- * @param val1 First value
- * @param val2 Second value
- * @details If val1 < val2, logs both values and aborts.
- *          Example: CHECK_GE(size, min_size) << "Size too small";
+ * @param val1 The first value to compare
+ * @param val2 The second value to compare
+ * @return void (or no-op if val1 >= val2)
+ * @details If val1 < val2, logs a FATAL message showing both values
+ *          and aborts the program.
+ * 
+ * Usage example:
+ * @code
+ * CHECK_GE(version, min_version);
+ * CHECK_GE(data_size, header_size);
+ * @endcode
  */
 #define CHECK_GE(val1, val2)                                                   \
   LIKELY((val1) >= (val2))                                                     \
   ? (void)0                                                                    \
   : dlc_inf::FMessageVoidify() &                                               \
-          dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                 \
+          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__).stream() \
               << "Check failed: " #val1 " >= " #val2 " (" << (val1) << " vs "  \
               << (val2) << ") "
 
-#endif
+#endif // CHECK_HPP_

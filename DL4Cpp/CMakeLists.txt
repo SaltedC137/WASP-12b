@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.14)
 find_package(Armadillo REQUIRED)
 
 # Create static library
-add_library(DL4Cpp STATIC src/tensor.cpp src/check.cpp)
+add_library(DL4Cpp STATIC src/tensor.cpp src/log.cpp)
 
 # Include directories
 target_include_directories(DL4Cpp
