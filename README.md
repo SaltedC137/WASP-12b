@@ -38,6 +38,7 @@ This project uses CMake as its build system.
 mkdir build && cd build
 cmake ..
 cmake --build .
+cmake --install . --prefix .
 ```
 
 ### Build Output
@@ -47,7 +48,7 @@ cmake --build .
 
 ## Requirements
 
-- C++23 or later
+- C++20 or later
 - Armadillo library
 - CMake 3.14+
 
