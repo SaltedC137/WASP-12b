@@ -132,7 +132,7 @@ namespace dlc_inf
          * @details Releases existing data and takes ownership of the source's data.
          *          More efficient than copy assignment for temporary objects.
          */
-        Tensor<float> &operator=(Tensor &&tensor);
+        Tensor<float> &operator=(Tensor &&tensor) noexcept;
 
         /**
          * @brief Get the number of rows in the tensor

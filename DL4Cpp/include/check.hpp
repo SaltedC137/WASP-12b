@@ -35,43 +35,56 @@ private:
   std::ostringstream stream_;
 };
 
-}
+class FMessageVoidify {
+public:
+  FMessageVoidify() = default;
+  void operator&(std::ostream& stream){}
+};
+} // namespace dlc_inf
+
+
 
 #define CHECK(conditions)                                                      \
   LIKELY(conditions)                                                           \
   ? (void)0                                                                    \
-  : dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                       \
-          << "Check failed: " #conditions " "
+  : dlc_inf::FMessageVoidify() &                                               \
+          dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                 \
+              << "Check failed: " #conditions " "
 
 
 #define CHECK_EQ(val1, val2)                                                   \
   LIKELY((val1) == (val2))                                                     \
   ? (void)0                                                                    \
-  : dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                       \
-          << "Check failed: " #val1 " == " #val2 " (" << (val1) << " vs "      \
-          << (val2) << ") "
+  : dlc_inf::FMessageVoidify() &                                               \
+          dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                 \
+              << "Check failed: " #val1 " == " #val2 " (" << (val1) << " vs "  \
+              << (val2) << ") "
 
 
 #define CHECK_LT(val1, val2)                                                   \
   LIKELY((val1) < (val2))                                                      \
   ? (void)0                                                                    \
-  : dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                       \
-          << "Check failed: " #val1 " < " #val2 " (" << (val1) << " vs "       \
-          << (val2) << ") "
+  : dlc_inf::FMessageVoidify() &                                               \
+          dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                 \
+              << "Check failed: " #val1 " < " #val2 " (" << (val1) << " vs "   \
+              << (val2) << ") "
 
 
 #define CHECK_LE(val1, val2)                                                   \
   LIKELY((val1) <= (val2))                                                     \
   ? (void)0                                                                    \
-  : dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                       \
-          << "Check failed: " #val1 " <= " #val2 " (" << (val1) << " vs "      \
-          << (val2) << ") "
+  : dlc_inf::FMessageVoidify() &                                               \
+          dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                 \
+              << "Check failed: " #val1 " <= " #val2 " (" << (val1) << " vs "  \
+              << (val2) << ") "
+
 
 #define CHECK_GE(val1, val2)                                                   \
   LIKELY((val1) >= (val2))                                                     \
   ? (void)0                                                                    \
-  : dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                       \
-          << "Check failed: " #val1 " >= " #val2 " (" << (val1) << " vs "      \
-          << (val2) << ") "
+  : dlc_inf::FMessageVoidify() &                                               \
+          dlc_inf::FMessageLogger(__FILE__, __LINE__).stream()                 \
+              << "Check failed: " #val1 " >= " #val2 " (" << (val1) << " vs "  \
+              << (val2) << ") "
 
 #endif
