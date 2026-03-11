@@ -5,6 +5,7 @@
  */
 
 #include "tensor.hpp"
+#include "check.hpp"
 #include <armadillo>
 #include <cmath>
 #include <cstdint>
