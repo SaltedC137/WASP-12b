@@ -7,7 +7,6 @@
 #include "tensor.hpp"
 #include "check.hpp"
 #include <armadillo>
-#include <cmath>
 #include <cstdint>
 #include <vector>
 
@@ -210,7 +209,9 @@ void Tensor<float>::Padding(const std::vector<uint32_t> &pads,
       return;
   }
   arma::fcube new_data;
+
   if (padding_value == 0.f) {
+    
     }
 }
 
