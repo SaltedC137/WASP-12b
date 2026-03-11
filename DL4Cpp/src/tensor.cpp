@@ -7,6 +7,7 @@
 #include "tensor.hpp"
 #include "check.hpp"
 #include "log.hpp"
+
 #include <algorithm>
 #include <armadillo>
 #include <cstdint>
@@ -17,6 +18,7 @@
 
 namespace dlc_inf {
 
+// Construct 3D tensor with specified channels, rows, and cols
 Tensor<float>::Tensor(uint32_t channels, uint32_t rows, uint32_t cols) {
   data_ = arma::fcube(rows, cols, channels);
   if (channels == 1 && rows == 1) {
@@ -28,16 +30,19 @@ Tensor<float>::Tensor(uint32_t channels, uint32_t rows, uint32_t cols) {
     }
 }
 
+// Construct 2D tensor (matrix) with rows and cols
 Tensor<float>::Tensor(uint32_t rows, uint32_t cols) {
   data_ = arma::fcube(rows, cols, 1);
   this->raw_shape_ = std::vector<uint32_t>{rows, cols};
 }
 
+// Construct 1D tensor (vector) with specified size
 Tensor<float>::Tensor(uint32_t size) {
   data_ = arma::fcube(1, size, 1);
   this->raw_shape_ = std::vector<uint32_t>{size};
 }
 
+// Construct tensor from shape vector
 Tensor<float>::Tensor(const std::vector<uint32_t>& shapes){
   CHECK(!shapes.empty() && shapes.size() <= 3)
       << "Shape vector cannot be empty";
@@ -61,6 +66,7 @@ Tensor<float>::Tensor(const std::vector<uint32_t>& shapes){
 }
 
 
+// Copy constructor - deep copy
 Tensor<float>::Tensor(const Tensor &tensor) {
   if (this != &tensor) {
     this->data_ = tensor.data_;
@@ -68,6 +74,7 @@ Tensor<float>::Tensor(const Tensor &tensor) {
     }
 }
 
+// Move constructor - transfer ownership
 Tensor<float>::Tensor(Tensor<float> &&tensor) noexcept{
   if (this != &tensor) {
     this->data_ = std::move(tensor.data_);
@@ -75,6 +82,7 @@ Tensor<float>::Tensor(Tensor<float> &&tensor) noexcept{
   }
 }
 
+// Move assignment operator
 Tensor<float>& Tensor<float>::operator=(Tensor<float>&& tensor) noexcept {
   if (this != &tensor) {
     this->data_ = std::move(tensor.data_);
@@ -83,6 +91,7 @@ Tensor<float>& Tensor<float>::operator=(Tensor<float>&& tensor) noexcept {
   return *this;
 }
 
+// Copy assignment operator
 Tensor<float>& Tensor<float>::operator=(const Tensor& tensor) {
   if (this != &tensor) {
     this->data_ = tensor.data_;
@@ -92,36 +101,43 @@ Tensor<float>& Tensor<float>::operator=(const Tensor& tensor) {
 }
 
 
+// Get number of rows
 uint32_t Tensor<float>::rows() const {
   CHECK(!this->data_.empty());
   return this->data_.n_rows;
 }
 
+// Get number of columns
 uint32_t Tensor<float>::cols() const {
   CHECK(!this->data_.empty());
   return this->data_.n_cols;
 }
 
+// Get number of channels
 uint32_t Tensor<float>::channels() const {
   CHECK(!this->data_.empty());
   return this->data_.n_slices;
 }
 
+// Get total number of elements
 uint32_t Tensor<float>::size() const {
   CHECK(!this->data_.empty());
   return this->data_.size();
 }
 
+// Check if tensor is empty
 bool Tensor<float>::empty() const {
   return this->data_.empty();
 }
 
 
+// Get tensor shape as vector
 std::vector<uint32_t> Tensor<float>::shapes() const {
   CHECK(!this->data_.empty());
   return std::vector<uint32_t>{this->channels(),this->rows(),this->cols()};
 }
 
+// Get sub-shape (channels, rows, cols)
 const std::vector<uint32_t> Tensor<float>::sub_shape() const {
   CHECK(!this->data_.empty());
   return std::vector<uint32_t>{this->channels(),this->rows(),this->cols()};

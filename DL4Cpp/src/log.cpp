@@ -12,9 +12,10 @@
 
 namespace dlc_inf {
 
-
+// Default log level set to INFO
 LogLevel SystemLogLevel = LogLevel::INFO;
 
+// Initialize log message with timestamp, level, and source location
 LogMessage::LogMessage(LogLevel level, const char* file, int line) : level_(level) {
     auto now = std::chrono::system_clock::now();
     auto time_t_now = std::chrono::system_clock::to_time_t(now);
@@ -30,10 +31,11 @@ LogMessage::LogMessage(LogLevel level, const char* file, int line) : level_(leve
     }
 
     stream_ << "[" << level_str << "] "
-            << std::put_time(tm_now, "%Y-%m-%d %H:%M:%S") 
+            << std::put_time(tm_now, "%Y-%m-%d %H:%M:%S")
             << " [" << file << ":" << line << "] ";
 }
 
+// Output log message on destruction, abort if FATAL level
 LogMessage::~LogMessage() {
     static std::mutex log_mutex;
     {
@@ -50,6 +52,7 @@ LogMessage::~LogMessage() {
     }
 }
 
+// Return the stream for chaining log output
 std::ostream& LogMessage::stream() { return stream_; }
 
 } // namespace dlc_inf
