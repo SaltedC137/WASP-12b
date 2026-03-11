@@ -32,9 +32,16 @@ int main() {
     // 3. 测试 3D 张量
     std::cout << "\n--- Test 3D Tensor ---" << std::endl;
     Tensor<float> tensor(3, 224, 224);  // RGB 图像
-    std::cout << "Created 3D tensor: " << tensor.channels() 
+    std::cout << "Created 3D tensor: " << tensor.channels()
               << "x" << tensor.rows() << "x" << tensor.cols() << std::endl;
     assert(tensor.channels() == 3);
+
+    // 4. 测试 CHECK 宏 - 触发维度不匹配
+    std::cout << "\n--- Test CHECK Macro (expect crash) ---" << std::endl;
+    Tensor<float> small(2, 2);
+    Tensor<float> large(5, 5);
+    std::cout << "Attempting to set_data with mismatched dimensions..." << std::endl;
+    small.set_data(large.data());  // CHECK: rows 5 != 2
 
     std::cout << "\n=== All tests passed! ===" << std::endl;
     return 0;
