@@ -7,8 +7,12 @@
 #include "tensor.hpp"
 #include "check.hpp"
 #include "log.hpp"
+#include <algorithm>
 #include <armadillo>
 #include <cstdint>
+#include <cstring>
+#include <functional>
+#include <numeric>
 #include <vector>
 
 namespace dlc_inf {
@@ -259,6 +263,22 @@ void Tensor<float>::Fill(const std::vector<float> &values, bool row_major) {
   }
 }
 
+void Tensor<float>::One() {
+  CHECK(!this->data_.empty());
+  this->Fill(1.f);
+}
+
+void Tensor<float>::Rand() {
+  CHECK(!this->data_.empty());
+  this->data_.randn();
+}
+
+
+std::vector<float> Tensor<float>::values(bool row_major) {
+  return std::vector<float>{1};  //finish
+}
+
+
 void Tensor<float>::Show() {
   for (uint32_t it = 0; it < this->channels(); it++) {
     LOG(INFO) << "Channel: " << it;
@@ -266,10 +286,68 @@ void Tensor<float>::Show() {
     }
 }
 
+
+
+void Tensor<float>::Reshape(const std::vector<uint32_t> &shapes,
+                            bool row_major) {
+  CHECK(!this->data_.empty());
+  CHECK(!shapes.empty());
+  const uint32_t origin_size = this->size();
+  const uint32_t current_size =
+      std::accumulate(shapes.begin(), shapes.end(), 1, std::multiplies());
+  CHECK(shapes.size() <= 3);
+  CHECK(current_size == origin_size);
+
+  std::vector<float> values;
+  if (row_major) {
+    values = this->values(true);
+  }
+
+  if (shapes.size() == 3) {
+    this->data_.reshape(shapes.at(1), shapes.at(2), shapes.at(0));
+    this->raw_shape_ = {shapes.at(0), shapes.at(1), shapes.at(2)};
+  } else if (shapes.size() == 2) {
+    this->data_.reshape(shapes.at(0), shapes.at(1), 1);
+    this->raw_shape_ = {raw_shape_.at(0), raw_shape_.at(1)};
+  }else {
+    this->data_.reshape(1, shapes.at(0), 1);
+    this->raw_shape_ = {raw_shape_.at(0)};
+  }
+
+  if (row_major) {
+    this->Fill(values,true);
+  }
+}
+
+
 void Tensor<float>::Flatten(bool row_major) {
   CHECK(!this->data_.empty());
-  
+
+  const uint32_t rows = this->rows();
+  const uint32_t cols = this->cols();
+  const uint32_t channels = this->channels();
+  const uint32_t total_size = this->size();
+  if (rows == 1 && channels == 1) {
+    return;
+  }
+  arma::fcube flattened_data(1, total_size, 1);
+
+  if (row_major) {
+    const uint32_t tnums = rows * cols;
+
+    for (uint32_t it = 0; it < channels; ++it) {
+      arma::fmat transposed = this->data_.slice(1).t();
+      float *target_ptr = flattened_data.memptr() + it * tnums;
+      std::memcpy(target_ptr,transposed.memptr(),tnums *sizeof(float));
+    }
+  }else {
+  std::memcpy(flattened_data.memptr(), this->data_.memptr(), total_size * sizeof(float));
+  }
+  this->data_ = std::move(flattened_data);
+  this->raw_shape_ = {total_size};
 }
+
+
 
 
 }
