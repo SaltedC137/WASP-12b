@@ -152,13 +152,13 @@ float& Tensor<float>::index(uint32_t position) {
 float Tensor<float>::posi(uint32_t row, uint32_t col) const {
   CHECK_LT(row, this->rows());
   CHECK_LT(col, this->cols());
-  return this->data_.at(row,col,1);
+  return this->data_.at(row, col, 0);
 }
 
 float &Tensor<float>::posi(uint32_t row, uint32_t col) {
   CHECK_LT(row, this->rows());
   CHECK_LT(col, this->cols());
-  return this->data_.at(row,col,1);
+  return this->data_.at(row, col, 0);
 }
 
 float Tensor<float>::at(uint32_t channel, uint32_t row, uint32_t col) const {
@@ -235,7 +235,7 @@ if (this->raw_shape_.size() == 3) {
 }
 
 void Tensor<float>::Fill(float value) {
-  CHECK(!this->data_.size());
+  CHECK(!this->data_.empty());
   this->data_.fill(value);
 }
 
