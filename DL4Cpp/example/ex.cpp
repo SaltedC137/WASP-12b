@@ -6,43 +6,96 @@
  */
 
 #include <iostream>
-#include <cassert>
+#include <vector>
 #include "tensor.hpp"
+#include "check.hpp"
 
 using namespace dlc_inf;
 
+void TestTensorCreation() {
+    std::cout << "--- Test 1: Tensor Creation & Basic Properties ---\n";
+    
+    // Create a tensor with 2 channels, 3 rows, and 4 columns
+    Tensor<float> tensor(2, 3, 4);
+    
+    CHECK_EQ(tensor.channels(), 2);
+    CHECK_EQ(tensor.rows(), 3);
+    CHECK_EQ(tensor.cols(), 4);
+    CHECK_EQ(tensor.size(), 2 * 3 * 4);
+    
+    std::cout << "[Pass] Tensor creation and dimension validation successful.\n\n";
+}
+
+void TestRowMajorFill() {
+    std::cout << "--- Test 2: Row-Major Data Fill ---\n";
+    
+    Tensor<float> tensor(1, 2, 3); // 1 channel, 2 rows, 3 columns
+    
+    // Prepare a standard row-major 1D array (e.g., exported from PyTorch)
+    // Logically, it represents the following matrix:
+    // [1, 2, 3]
+    // [4, 5, 6]
+    std::vector<float> values = {1, 2, 3, 4, 5, 6};
+    
+    tensor.Fill(values, true); // 'true' indicates the input data is row-major
+    
+    // Verify the conversion
+    CHECK_EQ(tensor.at(0, 0, 0), 1);
+    CHECK_EQ(tensor.at(0, 0, 1), 2);
+    CHECK_EQ(tensor.at(0, 0, 2), 3);
+    CHECK_EQ(tensor.at(0, 1, 0), 4);
+    CHECK_EQ(tensor.at(0, 1, 1), 5);
+    CHECK_EQ(tensor.at(0, 1, 2), 6);
+    
+    std::cout << "[Pass] Row-major conversion and data validation successful.\n\n";
+}
+
+void TestPadding() {
+    std::cout << "--- Test 3: Tensor Edge Padding ---\n";
+    
+    // Create a 1-channel, 2x2 tensor, and fill it with 1s
+    Tensor<float> tensor(1, 2, 2);
+    std::vector<float> values = {1, 1, 
+                                 1, 1};
+    tensor.Fill(values, true);
+    
+    // Execute Padding: pad 1 layer on Top, Bottom, Left, and Right with value 0.0f
+    std::vector<uint32_t> pads = {1, 1, 1, 1};
+    tensor.Padding(pads, 0.0f);
+    
+    // Verify the new dimensions
+    CHECK_EQ(tensor.rows(), 4); // 2 (original) + 1 (top) + 1 (bottom) = 4
+    CHECK_EQ(tensor.cols(), 4); // 2 (original) + 1 (left) + 1 (right) = 4
+    
+    // Verify the padding results
+    // Expected matrix:
+    // 0 0 0 0
+    // 0 1 1 0
+    // 0 1 1 0
+    // 0 0 0 0
+    
+    // Check the top-left padding (should be 0)
+    CHECK_EQ(tensor.at(0, 0, 0), 0.0f); 
+    
+    // Check the center original data (should be 1)
+    CHECK_EQ(tensor.at(0, 1, 1), 1.0f); 
+    CHECK_EQ(tensor.at(0, 1, 2), 1.0f); 
+    CHECK_EQ(tensor.at(0, 2, 1), 1.0f); 
+    CHECK_EQ(tensor.at(0, 2, 2), 1.0f); 
+    
+    // Check the bottom-right padding (should be 0)
+    CHECK_EQ(tensor.at(0, 3, 3), 0.0f); 
+    
+    std::cout << "[Pass] Edge padding validation successful.\n\n";
+}
+
 int main() {
-    std::cout << "=== DL4Cpp Tensor Library Test ===" << std::endl;
-
-    // 1. 测试 1D 张量
-    std::cout << "\n--- Test 1D Tensor ---" << std::endl;
-    Tensor<float> vec(10);
-    std::cout << "Created 1D tensor, size: " << vec.size() << std::endl;
-    assert(vec.size() == 10);
-
-
-    // 2. 测试 2D 张量构造
-    std::cout << "\n--- Test 2D Tensor ---" << std::endl;
-    Tensor<float> mat(3, 4);  // 3 行 4 列
-    std::cout << "Created 2D tensor: " << mat.rows() << "x" << mat.cols() << std::endl;
-    assert(mat.rows() == 3);
-    assert(mat.cols() == 4);
-
-
-    // 3. 测试 3D 张量
-    std::cout << "\n--- Test 3D Tensor ---" << std::endl;
-    Tensor<float> tensor(3, 224, 224);  // RGB 图像
-    std::cout << "Created 3D tensor: " << tensor.channels()
-              << "x" << tensor.rows() << "x" << tensor.cols() << std::endl;
-    assert(tensor.channels() == 3);
-
-    // 4. 测试 CHECK 宏 - 触发维度不匹配
-    std::cout << "\n--- Test CHECK Macro (expect crash) ---" << std::endl;
-    Tensor<float> small(2, 2);
-    Tensor<float> large(5, 5);
-    std::cout << "Attempting to set_data with mismatched dimensions..." << std::endl;
-    small.set_data(large.data());  // CHECK: rows 5 != 2
-
-    std::cout << "\n=== All tests passed! ===" << std::endl;
+    std::cout << "====== KuiperInfer Core Feature Tests ======\n\n";
+    
+    TestTensorCreation();
+    TestRowMajorFill();
+    TestPadding();
+    
+    std::cout << "All test cases passed! Your Tensor class is extremely robust!\n";
     return 0;
 }

@@ -10,8 +10,6 @@
 #include <cstdint>
 #include <vector>
 
-
-
 namespace dlc_inf {
 
 Tensor<float>::Tensor(uint32_t channels, uint32_t rows, uint32_t cols) {
@@ -115,12 +113,12 @@ bool Tensor<float>::empty() const {
 
 
 std::vector<uint32_t> Tensor<float>::shapes() const {
-  CHECK(this->data_.empty());
+  CHECK(!this->data_.empty());
   return std::vector<uint32_t>{this->channels(),this->rows(),this->cols()};
 }
 
 const std::vector<uint32_t> Tensor<float>::sub_shape() const {
-  CHECK(this->data_.empty());
+  CHECK(!this->data_.empty());
   return std::vector<uint32_t>{this->channels(),this->rows(),this->cols()};
 }
 
@@ -211,9 +209,55 @@ void Tensor<float>::Padding(const std::vector<uint32_t> &pads,
   arma::fcube new_data;
 
   if (padding_value == 0.f) {
-    
-    }
+    new_data = arma::fcube(new_rows, new_cols,channels, arma::fill::zeros);
+  } else {
+    new_data = arma::fcube(new_rows, new_cols,channels, arma::fill::none);
+    new_data.fill(padding_value);
+  }
+
+  new_data.subcube(pad_rows1, pad_cols1, 0, pad_rows1 + rows - 1,
+                   pad_cols1 + cols - 1, channels - 1) = this->data_;
+
+  this->data_ = std::move(new_data);
+
+if (this->raw_shape_.size() == 3) {
+    this->raw_shape_ = {channels, new_rows, new_cols};
+  } else if (this->raw_shape_.size() == 2) {
+    this->raw_shape_ = {new_rows, new_cols};
+  } else {
+    this->raw_shape_ = {new_cols}; 
+  }
 }
+
+void Tensor<float>::Fill(float value) {
+  CHECK(!this->data_.size());
+  this->data_.fill(value);
+}
+
+void Tensor<float>::Fill(const std::vector<float> &values, bool row_major) {
+  CHECK(!this->data_.empty());
+  const uint32_t total_elems = this->data_.size();
+  CHECK_EQ(values.size(), total_elems);
+  if (row_major) {
+
+    const uint32_t rows = this->rows();
+    const uint32_t cols = this->cols();
+    const uint32_t channels = this->data_.n_slices;
+    const uint32_t planes = rows * cols;
+
+    for (uint32_t it = 0; it < channels; it++) {
+      auto &channel_data = this->data_.slice(it);
+
+      const arma::fmat channel_wrapper(
+          const_cast<float *>(values.data() + it * planes), this->cols(),
+          this->rows(), false, true);
+      channel_data = channel_wrapper.t();
+    }
+  }else {
+  std::copy(values.begin(),values.end(),this->data_.memptr());
+  }
+}
+
 
 
 }
