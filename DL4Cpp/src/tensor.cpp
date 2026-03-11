@@ -338,10 +338,10 @@ void Tensor<float>::Reshape(const std::vector<uint32_t> &shapes,
     this->raw_shape_ = {shapes.at(0), shapes.at(1), shapes.at(2)};
   } else if (shapes.size() == 2) {
     this->data_.reshape(shapes.at(0), shapes.at(1), 1);
-    this->raw_shape_ = {raw_shape_.at(0), raw_shape_.at(1)};
+    this->raw_shape_ = {shapes.at(0), shapes.at(1)};
   }else {
     this->data_.reshape(1, shapes.at(0), 1);
-    this->raw_shape_ = {raw_shape_.at(0)};
+    this->raw_shape_ = {shapes.at(0)};
   }
 
   if (row_major) {
@@ -366,7 +366,7 @@ void Tensor<float>::Flatten(bool row_major) {
     const uint32_t tnums = rows * cols;
 
     for (uint32_t it = 0; it < channels; ++it) {
-      arma::fmat transposed = this->data_.slice(1).t();
+      arma::fmat transposed = this->data_.slice(it).t();
       float *target_ptr = flattened_data.memptr() + it * tnums;
       std::memcpy(target_ptr,transposed.memptr(),tnums *sizeof(float));
     }
