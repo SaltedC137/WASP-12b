@@ -23,8 +23,8 @@ LogMessage::LogMessage(LogLevel level, const char* file, int line) : level_(leve
     const char* level_str = "UNKNOWN";
     switch (level) {
         case LogLevel::DEBUG:   level_str = "DEBUG"; break;
-        case LogLevel::INFO:    level_str = "INFO "; break;
-        case LogLevel::WARNING: level_str = "WARN "; break;
+        case LogLevel::INFO:    level_str = "INFO"; break;
+        case LogLevel::WARNING: level_str = "WARN"; break;
         case LogLevel::ERROR:   level_str = "ERROR"; break;
         case LogLevel::FATAL:   level_str = "FATAL"; break;
     }

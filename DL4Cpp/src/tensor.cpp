@@ -6,6 +6,7 @@
 
 #include "tensor.hpp"
 #include "check.hpp"
+#include "log.hpp"
 #include <armadillo>
 #include <cstdint>
 #include <vector>
@@ -258,6 +259,17 @@ void Tensor<float>::Fill(const std::vector<float> &values, bool row_major) {
   }
 }
 
+void Tensor<float>::Show() {
+  for (uint32_t it = 0; it < this->channels(); it++) {
+    LOG(INFO) << "Channel: " << it;
+    LOG(INFO) << "\n" << this->data_.slice(it);
+    }
+}
+
+void Tensor<float>::Flatten(bool row_major) {
+  CHECK(!this->data_.empty());
+  
+}
 
 
 }
