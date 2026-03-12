@@ -3,8 +3,8 @@
  * @author Aska Lyn
  * @brief Logging utilities for DL4Cpp library
  * @details Provides a flexible logging system with multiple severity levels
- *          (DEBUG, INFO, WARNING, ERROR, FATAL). Log messages include timestamps,
- *          source file, and line number information for easy debugging.
+ *          (DEBUG, INFO, WARNING, ERROR, FATAL). Log messages include
+ * timestamps, source file, and line number information for easy debugging.
  * @date 2026-03-11 21:28:25
  */
 
@@ -35,41 +35,41 @@ extern LogLevel SystemLogLevel;
 /**
  * @brief Log message builder class
  * @details Constructs and outputs log messages with automatic formatting.
- *          Each message includes the log level, timestamp, source file, and line number.
- *          For FATAL level messages, the program will abort after logging.
+ *          Each message includes the log level, timestamp, source file, and
+ * line number. For FATAL level messages, the program will abort after logging.
  */
 class LogMessage {
 public:
-    /**
-     * @brief Construct a log message with metadata
-     * @param level The severity level of this log message
-     * @param file The source file name (__FILE__)
-     * @param line The source line number (__LINE__)
-     * @details Initializes the message with timestamp and location info.
-     *          The actual message content is written via the stream() method.
-     */
-    LogMessage(LogLevel level, const char* file, int line);
+  /**
+   * @brief Construct a log message with metadata
+   * @param level The severity level of this log message
+   * @param file The source file name (__FILE__)
+   * @param line The source line number (__LINE__)
+   * @details Initializes the message with timestamp and location info.
+   *          The actual message content is written via the stream() method.
+   */
+  LogMessage(LogLevel level, const char *file, int line);
 
-    /**
-     * @brief Destructor - outputs the log message
-     * @details Automatically flushes and outputs the accumulated message
-     *          when the LogMessage object goes out of scope.
-     *          ERROR and FATAL messages go to stderr; others to stdout.
-     *          FATAL messages trigger program abortion after logging.
-     */
-    ~LogMessage();
+  /**
+   * @brief Destructor - outputs the log message
+   * @details Automatically flushes and outputs the accumulated message
+   *          when the LogMessage object goes out of scope.
+   *          ERROR and FATAL messages go to stderr; others to stdout.
+   *          FATAL messages trigger program abortion after logging.
+   */
+  ~LogMessage();
 
-    /**
-     * @brief Get the output stream for writing message content
-     * @return std::ostream& Reference to the internal string stream
-     * @details Use this stream to append custom message content.
-     *          Example: LOG(INFO) << "Value = " << x;
-     */
-    std::ostream& stream();
+  /**
+   * @brief Get the output stream for writing message content
+   * @return std::ostream& Reference to the internal string stream
+   * @details Use this stream to append custom message content.
+   *          Example: LOG(INFO) << "Value = " << x;
+   */
+  std::ostream &stream();
 
 private:
-    LogLevel level_;                    ///< The severity level of this message
-    std::ostringstream stream_;         ///< Accumulates the message content
+  LogLevel level_;            ///< The severity level of this message
+  std::ostringstream stream_; ///< Accumulates the message content
 };
 
 /**
@@ -80,15 +80,15 @@ private:
  */
 class FMessageVoidify {
 public:
-    FMessageVoidify() = default;
+  FMessageVoidify() = default;
 
-    /**
-     * @brief Consume the stream reference and return void
-     * @param stream The ostream reference to discard
-     * @details This operator allows the LOG macro to work correctly
-     *          in conditional expressions by converting the result to void.
-     */
-    void operator&(std::ostream& stream) {}
+  /**
+   * @brief Consume the stream reference and return void
+   * @param stream The ostream reference to discard
+   * @details This operator allows the LOG macro to work correctly
+   *          in conditional expressions by converting the result to void.
+   */
+  void operator&(std::ostream &stream) {}
 };
 
 /**
@@ -98,7 +98,7 @@ public:
  * @details If the specified level is below the current SystemLogLevel,
  *          the macro evaluates to (void)0 and no logging occurs.
  *          Otherwise, it creates a LogMessage object and returns its stream.
- * 
+ *
  * Usage examples:
  * @code
  * LOG(DEBUG) << "Debug value: " << x;
@@ -107,11 +107,12 @@ public:
  * LOG(FATAL) << "Critical failure, aborting";
  * @endcode
  */
-#define LOG(level)                                                               \
-  (dlc_inf::LogLevel::level < dlc_inf::SystemLogLevel)                           \
-  ? (void)0                                                                      \
-  : dlc_inf::FMessageVoidify() &                                                 \
-    dlc_inf::LogMessage(dlc_inf::LogLevel::level, __FILE__, __LINE__).stream()
+#define LOG(level)                                                             \
+  (dlc_inf::LogLevel::level < dlc_inf::SystemLogLevel)                         \
+      ? (void)0                                                                \
+      : dlc_inf::FMessageVoidify() &                                           \
+            dlc_inf::LogMessage(dlc_inf::LogLevel::level, __FILE__, __LINE__)  \
+                .stream()
 
 } // namespace dlc_inf
 

@@ -23,11 +23,11 @@ Tensor<float>::Tensor(uint32_t channels, uint32_t rows, uint32_t cols) {
   data_ = arma::fcube(rows, cols, channels);
   if (channels == 1 && rows == 1) {
     this->raw_shape_ = std::vector<uint32_t>{cols};
-  } else if (channels == 1){
+  } else if (channels == 1) {
     this->raw_shape_ = std::vector<uint32_t>{rows, cols};
-    }else {
-    this->raw_shape_ = std::vector<uint32_t>{channels,rows,cols};
-    }
+  } else {
+    this->raw_shape_ = std::vector<uint32_t>{channels, rows, cols};
+  }
 }
 
 // Construct 2D tensor (matrix) with rows and cols
@@ -43,7 +43,7 @@ Tensor<float>::Tensor(uint32_t size) {
 }
 
 // Construct tensor from shape vector
-Tensor<float>::Tensor(const std::vector<uint32_t>& shapes){
+Tensor<float>::Tensor(const std::vector<uint32_t> &shapes) {
   CHECK(!shapes.empty() && shapes.size() <= 3)
       << "Shape vector cannot be empty";
   const uint32_t remaining = 3 - shapes.size();
@@ -60,22 +60,21 @@ Tensor<float>::Tensor(const std::vector<uint32_t>& shapes){
     this->raw_shape_ = std::vector<uint32_t>{cols};
   } else if (channels == 1) {
     this->raw_shape_ = std::vector<uint32_t>{rows, cols};
-  }else {
+  } else {
     this->raw_shape_ = std::vector<uint32_t>{channels, rows, cols};
   }
 }
-
 
 // Copy constructor - deep copy
 Tensor<float>::Tensor(const Tensor &tensor) {
   if (this != &tensor) {
     this->data_ = tensor.data_;
     this->raw_shape_ = tensor.raw_shape_;
-    }
+  }
 }
 
 // Move constructor - transfer ownership
-Tensor<float>::Tensor(Tensor<float> &&tensor) noexcept{
+Tensor<float>::Tensor(Tensor<float> &&tensor) noexcept {
   if (this != &tensor) {
     this->data_ = std::move(tensor.data_);
     this->raw_shape_ = tensor.raw_shape_;
@@ -83,7 +82,7 @@ Tensor<float>::Tensor(Tensor<float> &&tensor) noexcept{
 }
 
 // Move assignment operator
-Tensor<float>& Tensor<float>::operator=(Tensor<float>&& tensor) noexcept {
+Tensor<float> &Tensor<float>::operator=(Tensor<float> &&tensor) noexcept {
   if (this != &tensor) {
     this->data_ = std::move(tensor.data_);
     this->raw_shape_ = tensor.raw_shape_;
@@ -92,14 +91,13 @@ Tensor<float>& Tensor<float>::operator=(Tensor<float>&& tensor) noexcept {
 }
 
 // Copy assignment operator
-Tensor<float>& Tensor<float>::operator=(const Tensor& tensor) {
+Tensor<float> &Tensor<float>::operator=(const Tensor &tensor) {
   if (this != &tensor) {
     this->data_ = tensor.data_;
     this->raw_shape_ = tensor.raw_shape_;
   }
   return *this;
 }
-
 
 // Get number of rows
 uint32_t Tensor<float>::rows() const {
@@ -126,24 +124,19 @@ uint32_t Tensor<float>::size() const {
 }
 
 // Check if tensor is empty
-bool Tensor<float>::empty() const {
-  return this->data_.empty();
-}
-
+bool Tensor<float>::empty() const { return this->data_.empty(); }
 
 // Get tensor shape as vector
 std::vector<uint32_t> Tensor<float>::shapes() const {
   CHECK(!this->data_.empty());
-  return std::vector<uint32_t>{this->channels(),this->rows(),this->cols()};
+  return std::vector<uint32_t>{this->channels(), this->rows(), this->cols()};
 }
 
 // Get sub-shape (channels, rows, cols)
 const std::vector<uint32_t> Tensor<float>::sub_shape() const {
   CHECK(!this->data_.empty());
-  return std::vector<uint32_t>{this->channels(),this->rows(),this->cols()};
+  return std::vector<uint32_t>{this->channels(), this->rows(), this->cols()};
 }
-
-
 
 void Tensor<float>::set_data(const arma::fcube &data) {
   CHECK(data.n_rows == this->data_.n_rows)
@@ -155,12 +148,12 @@ void Tensor<float>::set_data(const arma::fcube &data) {
   this->data_ = data;
 }
 
-float Tensor<float>::index(uint32_t position) const{
+float Tensor<float>::index(uint32_t position) const {
   CHECK(position < this->data_.size()) << "Tensor index Out of Bound";
   return this->data_.at(position);
 }
 
-float& Tensor<float>::index(uint32_t position) {
+float &Tensor<float>::index(uint32_t position) {
   CHECK(position < this->data_.size()) << "Tensor index Out of Bound";
   return this->data_.at(position);
 }
@@ -181,28 +174,26 @@ float Tensor<float>::at(uint32_t channel, uint32_t row, uint32_t col) const {
   CHECK_LT(row, this->rows());
   CHECK_LT(col, this->cols());
   CHECK_LT(channel, this->channels());
-  return this->data_.at(row, col,channel);
+  return this->data_.at(row, col, channel);
 }
 
-float& Tensor<float>::at(uint32_t channel, uint32_t row, uint32_t col) {
+float &Tensor<float>::at(uint32_t channel, uint32_t row, uint32_t col) {
   CHECK_LT(row, this->rows());
   CHECK_LT(col, this->cols());
   CHECK_LT(channel, this->channels());
-  return this->data_.at(row, col,channel);
+  return this->data_.at(row, col, channel);
 }
 
 arma::fcube &Tensor<float>::data() { return this->data_; }
 
-const arma::fcube& Tensor<float>::data() const {
-  return this->data_;
-}
+const arma::fcube &Tensor<float>::data() const { return this->data_; }
 
 arma::fmat &Tensor<float>::slice(uint32_t channel) {
-  CHECK_LT(channel,this->channels());
+  CHECK_LT(channel, this->channels());
   return this->data_.slice(channel);
 }
 
-const arma::fmat& Tensor<float>::slice(uint32_t channel) const {
+const arma::fmat &Tensor<float>::slice(uint32_t channel) const {
   CHECK_LT(channel, this->channels());
   return this->data_.slice(channel);
 }
@@ -212,8 +203,8 @@ void Tensor<float>::Padding(const std::vector<uint32_t> &pads,
   CHECK(!this->data_.empty());
   CHECK_EQ(pads.size(), 4);
 
-  const uint32_t pad_rows1 = pads.at(0);  
-  const uint32_t pad_rows2 = pads.at(1);  
+  const uint32_t pad_rows1 = pads.at(0);
+  const uint32_t pad_rows2 = pads.at(1);
   const uint32_t pad_cols1 = pads.at(2);
   const uint32_t pad_cols2 = pads.at(3);
 
@@ -225,14 +216,14 @@ void Tensor<float>::Padding(const std::vector<uint32_t> &pads,
   const uint32_t new_cols = cols + pad_cols1 + pad_cols2;
 
   if (pad_rows1 == 0 && pad_rows2 == 0 && pad_cols1 == 0 && pad_cols2 == 0) {
-      return;
+    return;
   }
   arma::fcube new_data;
 
   if (padding_value == 0.f) {
-    new_data = arma::fcube(new_rows, new_cols,channels, arma::fill::zeros);
+    new_data = arma::fcube(new_rows, new_cols, channels, arma::fill::zeros);
   } else {
-    new_data = arma::fcube(new_rows, new_cols,channels, arma::fill::none);
+    new_data = arma::fcube(new_rows, new_cols, channels, arma::fill::none);
     new_data.fill(padding_value);
   }
 
@@ -241,12 +232,12 @@ void Tensor<float>::Padding(const std::vector<uint32_t> &pads,
 
   this->data_ = std::move(new_data);
 
-if (this->raw_shape_.size() == 3) {
+  if (this->raw_shape_.size() == 3) {
     this->raw_shape_ = {channels, new_rows, new_cols};
   } else if (this->raw_shape_.size() == 2) {
     this->raw_shape_ = {new_rows, new_cols};
   } else {
-    this->raw_shape_ = {new_cols}; 
+    this->raw_shape_ = {new_cols};
   }
 }
 
@@ -274,8 +265,8 @@ void Tensor<float>::Fill(const std::vector<float> &values, bool row_major) {
           this->rows(), false, true);
       channel_data = channel_wrapper.t();
     }
-  }else {
-  std::copy(values.begin(),values.end(),this->data_.memptr());
+  } else {
+    std::copy(values.begin(), values.end(), this->data_.memptr());
   }
 }
 
@@ -288,7 +279,6 @@ void Tensor<float>::Rand() {
   CHECK(!this->data_.empty());
   this->data_.randn();
 }
-
 
 std::vector<float> Tensor<float>::values(bool row_major) {
   CHECK_EQ(this->data_.empty(), false);
@@ -309,14 +299,12 @@ std::vector<float> Tensor<float>::values(bool row_major) {
   return values;
 }
 
-
 void Tensor<float>::Show() {
   for (uint32_t it = 0; it < this->channels(); it++) {
     LOG(INFO) << "Channel: " << it;
     LOG(INFO) << "\n" << this->data_.slice(it);
-    }
+  }
 }
-
 
 void Tensor<float>::Reshape(const std::vector<uint32_t> &shapes,
                             bool row_major) {
@@ -339,16 +327,15 @@ void Tensor<float>::Reshape(const std::vector<uint32_t> &shapes,
   } else if (shapes.size() == 2) {
     this->data_.reshape(shapes.at(0), shapes.at(1), 1);
     this->raw_shape_ = {shapes.at(0), shapes.at(1)};
-  }else {
+  } else {
     this->data_.reshape(1, shapes.at(0), 1);
     this->raw_shape_ = {shapes.at(0)};
   }
 
   if (row_major) {
-    this->Fill(values,true);
+    this->Fill(values, true);
   }
 }
-
 
 void Tensor<float>::Flatten(bool row_major) {
   CHECK(!this->data_.empty());
@@ -368,10 +355,11 @@ void Tensor<float>::Flatten(bool row_major) {
     for (uint32_t it = 0; it < channels; ++it) {
       arma::fmat transposed = this->data_.slice(it).t();
       float *target_ptr = flattened_data.memptr() + it * tnums;
-      std::memcpy(target_ptr,transposed.memptr(),tnums *sizeof(float));
+      std::memcpy(target_ptr, transposed.memptr(), tnums * sizeof(float));
     }
-  }else {
-  std::memcpy(flattened_data.memptr(), this->data_.memptr(), total_size * sizeof(float));
+  } else {
+    std::memcpy(flattened_data.memptr(), this->data_.memptr(),
+                total_size * sizeof(float));
   }
   this->data_ = std::move(flattened_data);
   this->raw_shape_ = {total_size};
@@ -382,28 +370,26 @@ void Tensor<float>::Transform(const std::function<float(float)> &filter) {
   this->data_.transform(filter);
 }
 
-float* Tensor<float>::raw_ptr() {
+float *Tensor<float>::raw_ptr() {
   CHECK(!this->data_.empty());
   return this->data_.memptr();
 }
 
-float* Tensor<float>::raw_ptr(uint32_t offset) {
+float *Tensor<float>::raw_ptr(uint32_t offset) {
   const uint32_t size = this->size();
   CHECK(!this->data_.empty());
   CHECK_LT(offset, size);
   return this->data_.memptr() + offset;
 }
 
-float* Tensor<float>::matrix_raw_ptr(uint32_t index) {
+float *Tensor<float>::matrix_raw_ptr(uint32_t index) {
   CHECK_LT(index, this->channels());
   uint32_t offset = index * this->rows() * this->cols();
   CHECK_LE(offset, this->size());
-  float* mem_ptr = this->raw_ptr() + offset;
+  float *mem_ptr = this->raw_ptr() + offset;
   return mem_ptr;
 }
 
-float *Tensor<float>::tensor_raw_ptr(uint32_t index) {
-  return  this->raw_ptr();
-}
+float *Tensor<float>::tensor_raw_ptr(uint32_t index) { return this->raw_ptr(); }
 
-}
+} // namespace dlc_inf
