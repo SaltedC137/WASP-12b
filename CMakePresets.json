@@ -1,0 +1,85 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "windows-msys2",
+            "displayName": "Windows (MSYS2 MinGW)",
+            "description": "Build on Windows using MSYS2 MinGW",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "installDir": "${sourceDir}/out",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/out/bin",
+                "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/out/bin",
+                "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/out/bin"
+            }
+        },
+        {
+            "name": "linux",
+            "displayName": "Linux",
+            "description": "Build on Linux",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "installDir": "${sourceDir}/out",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/out/bin",
+                "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/out/bin",
+                "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/out/bin"
+            }
+        },
+        {
+            "name": "macos",
+            "displayName": "macOS",
+            "description": "Build on macOS",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "installDir": "${sourceDir}/out",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/out/bin",
+                "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/out/bin",
+                "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/out/bin"
+            }
+        },
+        {
+            "name": "default",
+            "displayName": "Default (Auto-detect)",
+            "description": "Automatically select the appropriate preset based on your operating system",
+            "inherits": "windows-msys2"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "default-build",
+            "configurePreset": "default"
+        },
+        {
+            "name": "linux-build",
+            "configurePreset": "linux"
+        },
+        {
+            "name": "macos-build",
+            "configurePreset": "macos"
+        }
+    ]
+}

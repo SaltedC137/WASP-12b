@@ -2,6 +2,7 @@
 # folder
 /.cache
 /build
+/out
 
 #file 
 

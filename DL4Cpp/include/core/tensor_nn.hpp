@@ -5,6 +5,8 @@
 #include <armadillo>
 #include <vector>
 
-namespace ctl::nn {}
+namespace ctl::nn {
+  
+}
 
 #endif

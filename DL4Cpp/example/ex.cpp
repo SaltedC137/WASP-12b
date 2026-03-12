@@ -7,11 +7,13 @@
 
 #include "check.hpp"
 #include "tensor.hpp"
+#include "tensor_math.hpp"
 #include <cmath>
 #include <iostream>
 #include <vector>
 
 using namespace ctl;
+using namespace ctl::math;
 
 // Helper function to compare floats with tolerance
 bool FloatEq(float a, float b, float eps = 1e-5f) {
@@ -364,6 +366,51 @@ void TestShapes() {
   std::cout << "[Pass] sub_shape().\n\n";
 }
 
+void TestTensorAdd() {
+  std::cout << "--- Test 14: Tensor Addition (add) ---\n";
+
+  // Test 1: Element-wise addition with functional interface
+  Tensor<float> tensor1(2, 2, 2);
+  std::vector<float> values1 = {1, 2, 3, 4, 5, 6, 7, 8};
+  tensor1.Fill(values1, false);
+
+  Tensor<float> tensor2(2, 2, 2);
+  std::vector<float> values2 = {8, 7, 6, 5, 4, 3, 2, 1};
+  tensor2.Fill(values2, false);
+
+  // Test functional add(tensor1, tensor2)
+  auto result = add(tensor1, tensor2);
+  CHECK_EQ(result->at(0, 0, 0), 9.0f);
+  CHECK_EQ(result->at(0, 1, 1), 9.0f);
+  CHECK_EQ(result->at(1, 0, 0), 9.0f);
+  CHECK_EQ(result->at(1, 1, 1), 9.0f);
+  std::cout << "[Pass] add(tensor1, tensor2) - element-wise.\n";
+
+  // Test 2: Broadcasting addition (3D tensor + per-channel bias)
+  Tensor<float> tensor3d(3, 2, 2);
+  std::vector<float> values3d(12);
+  for (int i = 0; i < 12; ++i)
+    values3d[i] = static_cast<float>(i + 1);
+  tensor3d.Fill(values3d, false);
+
+  // Bias: one scalar per channel (3 channels, each 1x1)
+  Tensor<float> bias(3, 1, 1); // 3 channels, 1 row, 1 col
+  std::vector<float> bias_values = {100, 200, 300};
+  bias.Fill(bias_values, false);
+
+  auto result_broadcast = add(tensor3d, bias);
+  // Channel 0: values [1,2,3,4] + bias[0]=100
+  CHECK_EQ(result_broadcast->at(0, 0, 0), 101.0f);
+  CHECK_EQ(result_broadcast->at(0, 1, 1), 104.0f);
+  // Channel 1: values [5,6,7,8] + bias[1]=200
+  CHECK_EQ(result_broadcast->at(1, 0, 0), 205.0f);
+  CHECK_EQ(result_broadcast->at(1, 1, 1), 208.0f);
+  // Channel 2: values [9,10,11,12] + bias[2]=300
+  CHECK_EQ(result_broadcast->at(2, 0, 0), 309.0f);
+  CHECK_EQ(result_broadcast->at(2, 1, 1), 312.0f);
+  std::cout << "[Pass] add(tensor3d, bias) - broadcasting.\n\n";
+}
+
 int main() {
   std::cout << "====== DL4Cpp Tensor Comprehensive Tests ======\n\n";
 
@@ -380,6 +427,7 @@ int main() {
   TestRawPointers();
   TestSetData();
   TestShapes();
+  TestTensorAdd();
 
   std::cout << "====== All test cases passed! ======\n";
   return 0;
