@@ -13,7 +13,7 @@
 #ifndef CHECK_HPP_
 #define CHECK_HPP_
 
-#include "log.hpp"  // IWYU pragma: export
+#include "log.hpp" // IWYU pragma: export
 
 /**
  * @brief Compiler-specific branch prediction hints
@@ -24,11 +24,11 @@
  *          On other compilers, they evaluate to the condition unchanged.
  */
 #if defined(__GNUC__) || defined(__clang__)
-    #define LIKELY(x) __builtin_expect(!!(x), 1)
-    #define UNLIKELY(x) __builtin_expect(!!(x), 0)
+#define LIKELY(x) __builtin_expect(!!(x), 1)
+#define UNLIKELY(x) __builtin_expect(!!(x), 0)
 #else
-    #define LIKELY(x) (x)
-    #define UNLIKELY(x) (x)
+#define LIKELY(x) (x)
+#define UNLIKELY(x) (x)
 #endif
 
 /**
@@ -37,7 +37,7 @@
  * @return void (or no-op if condition is true)
  * @details If the condition is false, logs a FATAL message with
  *          the failed expression text and aborts the program.
- * 
+ *
  * Usage example:
  * @code
  * CHECK(!tensor.empty()) << "Tensor must not be empty";
@@ -48,7 +48,8 @@
   LIKELY(conditions)                                                           \
   ? (void)0                                                                    \
   : dlc_inf::FMessageVoidify() &                                               \
-          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__).stream() \
+          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__)    \
+                  .stream()                                                    \
               << "Check failed: " #conditions " "
 
 /**
@@ -58,7 +59,7 @@
  * @return void (or no-op if values are equal)
  * @details If val1 != val2, logs a FATAL message showing both values
  *          and aborts the program. Useful for validating expected results.
- * 
+ *
  * Usage example:
  * @code
  * CHECK_EQ(tensor.size(), expected_size);
@@ -69,7 +70,8 @@
   LIKELY((val1) == (val2))                                                     \
   ? (void)0                                                                    \
   : dlc_inf::FMessageVoidify() &                                               \
-          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__).stream() \
+          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__)    \
+                  .stream()                                                    \
               << "Check failed: " #val1 " == " #val2 " (" << (val1) << " vs "  \
               << (val2) << ") "
 
@@ -80,7 +82,7 @@
  * @return void (or no-op if val1 < val2)
  * @details If val1 >= val2, logs a FATAL message showing both values
  *          and aborts the program. Useful for bounds checking.
- * 
+ *
  * Usage example:
  * @code
  * CHECK_LT(index, array_size);
@@ -91,7 +93,8 @@
   LIKELY((val1) < (val2))                                                      \
   ? (void)0                                                                    \
   : dlc_inf::FMessageVoidify() &                                               \
-          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__).stream() \
+          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__)    \
+                  .stream()                                                    \
               << "Check failed: " #val1 " < " #val2 " (" << (val1) << " vs "   \
               << (val2) << ") "
 
@@ -102,7 +105,7 @@
  * @return void (or no-op if val1 <= val2)
  * @details If val1 > val2, logs a FATAL message showing both values
  *          and aborts the program.
- * 
+ *
  * Usage example:
  * @code
  * CHECK_LE(current_size, max_size);
@@ -113,7 +116,8 @@
   LIKELY((val1) <= (val2))                                                     \
   ? (void)0                                                                    \
   : dlc_inf::FMessageVoidify() &                                               \
-          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__).stream() \
+          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__)    \
+                  .stream()                                                    \
               << "Check failed: " #val1 " <= " #val2 " (" << (val1) << " vs "  \
               << (val2) << ") "
 
@@ -124,7 +128,7 @@
  * @return void (or no-op if val1 >= val2)
  * @details If val1 < val2, logs a FATAL message showing both values
  *          and aborts the program.
- * 
+ *
  * Usage example:
  * @code
  * CHECK_GE(version, min_version);
@@ -135,7 +139,8 @@
   LIKELY((val1) >= (val2))                                                     \
   ? (void)0                                                                    \
   : dlc_inf::FMessageVoidify() &                                               \
-          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__).stream() \
+          dlc_inf::LogMessage(dlc_inf::LogLevel::FATAL, __FILE__, __LINE__)    \
+                  .stream()                                                    \
               << "Check failed: " #val1 " >= " #val2 " (" << (val1) << " vs "  \
               << (val2) << ") "
 
