@@ -392,8 +392,4 @@ float *Tensor<float>::matrix_raw_ptr(uint32_t index) {
 
 float *Tensor<float>::tensor_raw_ptr(uint32_t index) { return this->raw_ptr(); }
 
-<<<<<<< HEAD
-}
-=======
 } // namespace dlc_inf
->>>>>>> 915227a76b08189ef98b37b621dcce6ee9d272b4
