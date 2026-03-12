@@ -5,18 +5,6 @@
 #include <armadillo>
 #include <vector>
 
-namespace dlc_inf {
-
-  class 
-
-  
-}
-
-
-
-
-
-
-
+namespace ctl {}
 
 #endif

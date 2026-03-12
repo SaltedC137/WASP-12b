@@ -14,7 +14,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace dlc_inf {
+namespace ctl {
 
 /**
  * @brief Enumeration of logging severity levels
@@ -108,12 +108,11 @@ public:
  * @endcode
  */
 #define LOG(level)                                                             \
-  (dlc_inf::LogLevel::level < dlc_inf::SystemLogLevel)                         \
+  (ctl::LogLevel::level < ctl::SystemLogLevel)                                 \
       ? (void)0                                                                \
-      : dlc_inf::FMessageVoidify() &                                           \
-            dlc_inf::LogMessage(dlc_inf::LogLevel::level, __FILE__, __LINE__)  \
-                .stream()
+      : ctl::FMessageVoidify() &                                               \
+            ctl::LogMessage(ctl::LogLevel::level, __FILE__, __LINE__).stream()
 
-} // namespace dlc_inf
+} // namespace ctl
 
 #endif // LOG_HPP_

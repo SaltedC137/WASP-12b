@@ -10,7 +10,7 @@
 #include <iomanip>
 #include <mutex>
 
-namespace dlc_inf {
+namespace ctl {
 
 // Default log level set to INFO
 LogLevel SystemLogLevel = LogLevel::INFO;
@@ -66,4 +66,4 @@ LogMessage::~LogMessage() {
 // Return the stream for chaining log output
 std::ostream &LogMessage::stream() { return stream_; }
 
-} // namespace dlc_inf
+} // namespace ctl

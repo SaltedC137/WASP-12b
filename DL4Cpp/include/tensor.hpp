@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 
-namespace dlc_inf {
+namespace ctl {
 /**
  * @brief Primary template declaration for Tensor class
  * @tparam T The data type stored in the tensor (default: float)
@@ -399,6 +399,6 @@ private:
 // Type aliases for convenience
 using ften = Tensor<float>;                 ///< Float tensor - shorthand alias
 using sft = std::shared_ptr<Tensor<float>>; ///< Shared pointer to float tensor
-} // namespace dlc_inf
+} // namespace ctl
 
 #endif

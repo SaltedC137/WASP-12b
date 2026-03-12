@@ -11,7 +11,7 @@
 #include <iostream>
 #include <vector>
 
-using namespace dlc_inf;
+using namespace ctl;
 
 // Helper function to compare floats with tolerance
 bool FloatEq(float a, float b, float eps = 1e-5f) {

@@ -16,7 +16,7 @@
 #include <numeric>
 #include <vector>
 
-namespace dlc_inf {
+namespace ctl {
 
 // Construct 3D tensor with specified channels, rows, and cols
 Tensor<float>::Tensor(uint32_t channels, uint32_t rows, uint32_t cols) {
@@ -392,4 +392,4 @@ float *Tensor<float>::matrix_raw_ptr(uint32_t index) {
 
 float *Tensor<float>::tensor_raw_ptr(uint32_t index) { return this->raw_ptr(); }
 
-} // namespace dlc_inf
+} // namespace ctl
