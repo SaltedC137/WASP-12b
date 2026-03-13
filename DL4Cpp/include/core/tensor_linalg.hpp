@@ -6,16 +6,14 @@
  * @date 2026-03-12
  */
 
-
 #ifdef TENSOR_LINALG_HPP
 
-#define _TENSOR_LINALG_HPP
+#define TENSOR_LINALG_HPP
 
 #pragma once
 
 #include "tensor.hpp"
 
 namespace ctl::linalg {}
-
 
 #endif
