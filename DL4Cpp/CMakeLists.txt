@@ -40,6 +40,19 @@ else()
     target_include_directories(DL4Cpp PUBLIC ${ARMADILLO_INCLUDE_DIRS})
 endif()
 
+
+
+# OpenMP support
+
+find_package(OpenMP REQUIRED)
+
+if(OpenMP_CXX_FOUND)
+    message(STATUS "Found OpenMP! Enabling multi-threading for DL4Cpp.")
+    target_link_libraries(DL4Cpp PUBLIC OpenMP::OpenMP_CXX)
+    target_compile_definitions(DL4Cpp PUBLIC ARMA_USE_OPENMP)
+endif()
+
+
 # C++ standard
 if(NOT CMAKE_CXX_STANDARD)
     set_target_properties(DL4Cpp PROPERTIES

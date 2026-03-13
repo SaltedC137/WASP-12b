@@ -472,6 +472,114 @@ void TestTensorSubtract() {
   std::cout << "[Pass] sub() with negative values.\n\n";
 }
 
+void TestTensorMultiply() {
+  std::cout << "--- Test 16: Tensor Element-wise Multiplication (mul) ---\n";
+
+  // Test 1: Element-wise multiplication with functional interface
+  Tensor<float> tensor1(2, 2, 2);
+  std::vector<float> values1 = {1, 2, 3, 4, 5, 6, 7, 8};
+  tensor1.Fill(values1, false);
+
+  Tensor<float> tensor2(2, 2, 2);
+  std::vector<float> values2 = {8, 7, 6, 5, 4, 3, 2, 1};
+  tensor2.Fill(values2, false);
+
+  // Test functional mul(tensor1, tensor2)
+  auto result = mul(tensor1, tensor2);
+  CHECK_EQ(result->at(0, 0, 0), 8.0f);    // 1 * 8
+  CHECK_EQ(result->at(0, 1, 1), 20.0f);   // 4 * 5
+  CHECK_EQ(result->at(1, 0, 0), 20.0f);   // 5 * 4
+  CHECK_EQ(result->at(1, 1, 1), 8.0f);    // 8 * 1
+  std::cout << "[Pass] mul(tensor1, tensor2) - element-wise.\n";
+
+  // Test 2: Broadcasting multiplication (3D tensor * per-channel scale)
+  Tensor<float> tensor3d(3, 2, 2);
+  std::vector<float> values3d(12);
+  for (int i = 0; i < 12; ++i)
+    values3d[i] = static_cast<float>(i + 1);
+  tensor3d.Fill(values3d, false);
+
+  // Scale: one scalar per channel (3 channels, each 1x1)
+  Tensor<float> scale(3, 1, 1);
+  std::vector<float> scale_values = {10, 20, 30};
+  scale.Fill(scale_values, false);
+
+  auto result_broadcast = mul(tensor3d, scale);
+  // Channel 0: values [1,2,3,4] * scale[0]=10
+  CHECK_EQ(result_broadcast->at(0, 0, 0), 10.0f);
+  CHECK_EQ(result_broadcast->at(0, 1, 1), 40.0f);
+  // Channel 1: values [5,6,7,8] * scale[1]=20
+  CHECK_EQ(result_broadcast->at(1, 0, 0), 100.0f);
+  CHECK_EQ(result_broadcast->at(1, 1, 1), 160.0f);
+  // Channel 2: values [9,10,11,12] * scale[2]=30
+  CHECK_EQ(result_broadcast->at(2, 0, 0), 270.0f);
+  CHECK_EQ(result_broadcast->at(2, 1, 1), 360.0f);
+  std::cout << "[Pass] mul(tensor3d, scale) - broadcasting.\n";
+
+  // Test 3: Multiplication with zero
+  Tensor<float> zero_tensor(2, 2, 2);
+  zero_tensor.Fill(0.0f);
+  auto zero_result = mul(tensor1, zero_tensor);
+  CHECK_EQ(zero_result->at(0, 0, 0), 0.0f);
+  CHECK_EQ(zero_result->at(1, 1, 1), 0.0f);
+  std::cout << "[Pass] mul() with zero.\n\n";
+}
+
+void TestTensorDivide() {
+  std::cout << "--- Test 17: Tensor Element-wise Division (div) ---\n";
+
+  // Test 1: Element-wise division with functional interface
+  Tensor<float> tensor1(2, 2, 2);
+  std::vector<float> values1 = {8, 16, 24, 32, 40, 48, 56, 64};
+  tensor1.Fill(values1, false);
+
+  Tensor<float> tensor2(2, 2, 2);
+  std::vector<float> values2 = {1, 2, 3, 4, 5, 6, 7, 8};
+  tensor2.Fill(values2, false);
+
+  // Test functional div(tensor1, tensor2)
+  auto result = div(tensor1, tensor2);
+  CHECK_EQ(result->at(0, 0, 0), 8.0f);    // 8 / 1
+  CHECK_EQ(result->at(0, 1, 1), 8.0f);    // 32 / 4
+  CHECK_EQ(result->at(1, 0, 0), 8.0f);    // 40 / 5
+  CHECK_EQ(result->at(1, 1, 1), 8.0f);    // 64 / 8
+  std::cout << "[Pass] div(tensor1, tensor2) - element-wise.\n";
+
+  // Test 2: Broadcasting division (3D tensor / per-channel divisor)
+  Tensor<float> tensor3d(3, 2, 2);
+  std::vector<float> values3d(12);
+  for (int i = 0; i < 12; ++i)
+    values3d[i] = static_cast<float>(i + 1);
+  tensor3d.Fill(values3d, false);
+
+  // Divisor: one scalar per channel (3 channels, each 1x1)
+  Tensor<float> divisor(3, 1, 1);
+  std::vector<float> divisor_values = {1.0f, 2.0f, 4.0f};
+  divisor.Fill(divisor_values, false);
+
+  auto result_broadcast = div(tensor3d, divisor);
+  // Channel 0: values [1,2,3,4] / divisor[0]=1
+  CHECK_EQ(result_broadcast->at(0, 0, 0), 1.0f);
+  CHECK_EQ(result_broadcast->at(0, 1, 1), 4.0f);
+  // Channel 1: values [5,6,7,8] / divisor[1]=2
+  CHECK_EQ(result_broadcast->at(1, 0, 0), 2.5f);
+  CHECK_EQ(result_broadcast->at(1, 1, 1), 4.0f);
+  // Channel 2: values [9,10,11,12] / divisor[2]=4
+  CHECK_EQ(result_broadcast->at(2, 0, 0), 2.25f);
+  CHECK_EQ(result_broadcast->at(2, 1, 1), 3.0f);
+  std::cout << "[Pass] div(tensor3d, divisor) - broadcasting.\n";
+
+  // Test 3: Division resulting in fractions
+  Tensor<float> ones(2, 2, 2);
+  ones.Fill(1.0f);
+  Tensor<float> twos(2, 2, 2);
+  twos.Fill(2.0f);
+  auto fraction_result = div(ones, twos);
+  CHECK_EQ(fraction_result->at(0, 0, 0), 0.5f);
+  CHECK_EQ(fraction_result->at(1, 1, 1), 0.5f);
+  std::cout << "[Pass] div() resulting in fractions.\n\n";
+}
+
 int main() {
   std::cout << "====== DL4Cpp Tensor Comprehensive Tests ======\n\n";
 
@@ -490,6 +598,8 @@ int main() {
   TestShapes();
   TestTensorAdd();
   TestTensorSubtract();
+  TestTensorMultiply();
+  TestTensorDivide();
 
   std::cout << "====== All test cases passed! ======\n";
   return 0;
