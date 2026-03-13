@@ -12,52 +12,133 @@ DL4Cpp aims to provide a lightweight, educational implementation of deep learnin
 
 - **Tensor**: Multi-dimensional tensor data structures (1D/2D/3D) with efficient memory management
 - **Math Operations**: Element-wise arithmetic, matrix multiplication, scalar operations, and transformations
-- **Utilities**: CHECK macros for logging and assertion (similar to Google glog)
+- **Utilities**: CHECK macros for logging and assertions (similar to Google glog)
 - **Backend**: Built on top of Armadillo for optimized linear algebra
 
 ## Project Structure
 
 ```
-DL4Cpp/
-├── include/              # Header files
-│   ├── tensor.hpp        # Tensor class definition
-│   ├── tensor_math.hpp   # Tensor mathematical operations
-│   ├── tensor_nn.hpp     # Neural network components (TODO)
-│   ├── check.hpp         # CHECK macros for logging and assertions
-│   └── log.hpp           # Logging utilities
-├── src/                  # Implementation files
-│   ├── tensor.cpp        # Tensor class implementation
-│   ├── tensor_math.cpp   # Tensor math operations implementation (TODO)
-│   └── check.cpp         # FMessageLogger and FMessageVoidify implementation
-├── example/              # Example usage code
-│   └── ex.cpp            # Demonstration examples
-└── CMakeLists.txt        # Build configuration
+WASP-12b/
+├── DL4Cpp/
+│   ├── include/              # Header files
+│   │   ├── core/
+│   │   │   ├── tensor.hpp        # Tensor class definition
+│   │   │   ├── tensor_math.hpp   # Tensor mathematical operations
+│   │   │   └── tensor_nn.hpp     # Neural network components (TODO)
+│   │   ├── check.hpp         # CHECK macros for logging and assertions
+│   │   └── log.hpp           # Logging utilities
+│   ├── src/                  # Implementation files
+│   │   ├── core/
+│   │   │   ├── tensor.cpp        # Tensor class implementation
+│   │   │   ├── tensor_math.cpp   # Tensor math operations implementation (TODO)
+│   │   │   └── tensor_nn.cpp     # Neural network components implementation (TODO)
+│   │   └── log.cpp         # Logging implementation
+│   ├── example/              # Example code
+│   │   ├── ex.cpp            # Feature demonstration examples
+│   │   └── bench.cpp         # Performance benchmarks
+│   └── CMakeLists.txt        # Build configuration
+├── out/                      # Build output directory
+│   └── bin/                  # Final output files (executables, libraries, headers)
+├── build/                    # CMake build directory
+└── CMakeLists.txt            # Root project configuration
 ```
 
 ## Building
 
 This project uses CMake as its build system.
 
+### Quick Start
+
 ```bash
+# Configure and build
 mkdir build && cd build
-
 cmake ..
-
 cmake --build .
-
-cmake --install . --prefix .
 ```
 
-### Build Output
+### Full Build Process (with Installation)
 
-- **Static Library**: `build/DL4Cpp/libDL4Cpp.a`
-- **Test Executable**: `build/DL4Cpp/dl4cpp_test.exe`
+```bash
+# 1. Create build directory
+mkdir build && cd build
+
+# 2. Configure project
+cmake ..
+
+# 3. Build project
+cmake --build .
+
+# 4. Install to out/bin/
+cmake --install . --prefix ../out/bin
+```
+
+### Using Presets (Recommended)
+
+The project provides `CMakePresets.json` for convenient configuration:
+
+```bash
+# Configure using preset
+cmake --preset=default
+
+# Build using preset
+cmake --build --preset=default
+```
+
+### Build Artifacts
+
+After building, output files are located in the `out/bin/` directory:
+
+| File | Description |
+|------|-------------|
+| `lib/DL4Cpp.lib` | Static library (Windows) |
+| `lib/libDL4Cpp.a` | Static library (Linux/macOS) |
+| `bin/dl4cpp_test.exe` | Test executable |
+| `bin/dl4cpp_bench.exe` | Benchmark executable |
+| `include/` | Header files copy |
+
+### Running Tests
+
+```bash
+cd build
+ctest --output-on-failure
+```
+
+Or run the test executable directly:
+
+```bash
+./out/bin/dl4cpp_test.exe
+```
 
 ## Requirements
 
-- C++20 or later
-- Armadillo library
-- CMake 3.14+
+- **C++23** or later
+- **Armadillo** linear algebra library
+- **CMake 3.14+**
+
+### Installing Dependencies
+
+Using vcpkg (recommended):
+
+```bash
+# Set VCPKG_ROOT environment variable
+set VCPKG_ROOT=C:\path\to\vcpkg  # Windows
+
+# Install Armadillo
+vcpkg install armadillo
+```
+
+Or use system package managers:
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install libarmadillo-dev
+
+# macOS (Homebrew)
+brew install armadillo
+
+# Windows (vcpkg)
+vcpkg install armadillo:x64-windows
+```
 
 ## Implemented Features
 
@@ -66,9 +147,9 @@ cmake --install . --prefix .
 - [x] Copy/Move semantics
 - [x] Element access (`index`, `posi`, `at`)
 - [x] Shape manipulation (`Reshape`, `Flatten`)
-- [x] Padding (`Padding`)
+- [x] Padding operations (`Padding`)
 - [x] Fill operations (`Fill`, `One`, `Rand`)
-- [x] Transformation (`Transform`)
+- [x] Transformation operations (`Transform`)
 - [x] Data export (`values`, `Show`)
 - [x] Raw pointer access (`raw_ptr`, `matrix_raw_ptr`)
 
@@ -82,11 +163,12 @@ cmake --install . --prefix .
 
 ### Utilities
 - [x] CHECK macros (`CHECK`, `CHECK_EQ`, `CHECK_LT`, `CHECK_LE`, `CHECK_GE`)
+- [x] Logging (`FMessageLogger`, `FMessageVoidify`)
 
 ## TODO
 
 ### High Priority
-- [ ] Implement math operations in `src/tensor_math.cpp`
+- [ ] Implement math operations in `src/core/tensor_math.cpp`
 - [ ] Convolution operations (Conv2D, Conv3D)
 - [ ] Pooling layers (MaxPool, AvgPool)
 - [ ] Activation functions (ReLU, Sigmoid, Tanh, Softmax)
@@ -110,6 +192,10 @@ cmake --install . --prefix .
 - [ ] Python bindings (pybind11)
 - [ ] Example tutorials and benchmarks
 
+## License
+
+This project is licensed under the MIT License.
+
 ---
 
-*Last updated: 2026-03-12*
+*Last updated: 2026-03-13*

@@ -16,6 +16,13 @@ set(DL4CPP_SOURCES
 # Create static library
 add_library(DL4Cpp STATIC ${DL4CPP_SOURCES})
 
+# Ensure output directory exists (both at configure time and build time)
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/../out/bin)
+add_custom_command(TARGET DL4Cpp PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/../out/bin
+    COMMENT "Ensuring out/bin directory exists"
+)
+
 # Include directories
 target_include_directories(DL4Cpp
     PUBLIC
