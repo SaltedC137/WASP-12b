@@ -53,6 +53,14 @@ if(DL4CPP_BUILD_TESTS)
     add_test(NAME TensorExample COMMAND dl4cpp_test)
 endif()
 
+# Benchmarks
+option(DL4CPP_BUILD_BENCHMARKS "Build DL4Cpp benchmarks" ON)
+
+if(DL4CPP_BUILD_BENCHMARKS)
+    add_executable(dl4cpp_bench example/bench.cpp)
+    target_link_libraries(dl4cpp_bench PRIVATE DL4Cpp)
+endif()
+
 # Installation
 include(GNUInstallDirs)
 
