@@ -77,6 +77,16 @@ UBENCH(Math, Add3D) {
   auto result = add(a, b);
 }
 
+UBENCH(Math, Sub3D) {
+  // Element-wise subtraction of two 3D tensors
+  Tensor<float> a(100, 100, 10);
+  Tensor<float> b(100, 100, 10);
+  a.Rand();
+  b.Rand();
+
+  auto result = sub(a, b);
+}
+
 UBENCH(Math, AddScalarBroadcast) {
   // Test broadcasting: 3D tensor + per-channel bias
   Tensor<float> tensor(100, 50, 50);
@@ -85,6 +95,16 @@ UBENCH(Math, AddScalarBroadcast) {
   bias.Rand();
 
   auto result = add(tensor, bias);
+}
+
+UBENCH(Math, SubScalarBroadcast) {
+  // Test broadcasting: 3D tensor - per-channel bias
+  Tensor<float> tensor(100, 50, 50);
+  tensor.Rand();
+  Tensor<float> bias(100, 1, 1);
+  bias.Rand();
+
+  auto result = sub(tensor, bias);
 }
 
 UBENCH(Math, Transform) {

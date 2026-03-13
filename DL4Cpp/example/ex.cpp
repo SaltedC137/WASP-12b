@@ -411,6 +411,67 @@ void TestTensorAdd() {
   std::cout << "[Pass] add(tensor3d, bias) - broadcasting.\n\n";
 }
 
+void TestTensorSubtract() {
+  std::cout << "--- Test 15: Tensor Subtraction (sub) ---\n";
+
+  // Test 1: Element-wise subtraction with functional interface
+  Tensor<float> tensor1(2, 2, 2);
+  std::vector<float> values1 = {10, 20, 30, 40, 50, 60, 70, 80};
+  tensor1.Fill(values1, false);
+
+  Tensor<float> tensor2(2, 2, 2);
+  std::vector<float> values2 = {1, 2, 3, 4, 5, 6, 7, 8};
+  tensor2.Fill(values2, false);
+
+  // Test functional sub(tensor1, tensor2)
+  auto result = sub(tensor1, tensor2);
+  CHECK_EQ(result->at(0, 0, 0), 9.0f);   // 10 - 1
+  CHECK_EQ(result->at(0, 1, 1), 36.0f);  // 40 - 4
+  CHECK_EQ(result->at(1, 0, 0), 45.0f);  // 50 - 5
+  CHECK_EQ(result->at(1, 1, 1), 72.0f);  // 80 - 8
+  std::cout << "[Pass] sub(tensor1, tensor2) - element-wise.\n";
+
+  // Test 2: Broadcasting subtraction (3D tensor - per-channel bias)
+  Tensor<float> tensor3d(3, 2, 2);
+  std::vector<float> values3d(12);
+  for (int i = 0; i < 12; ++i)
+    values3d[i] = static_cast<float>(i + 1);
+  tensor3d.Fill(values3d, false);
+
+  // Bias: one scalar per channel (3 channels, each 1x1)
+  Tensor<float> bias(3, 1, 1);
+  std::vector<float> bias_values = {10, 20, 30};
+  bias.Fill(bias_values, false);
+
+  auto result_broadcast = sub(tensor3d, bias);
+  // Channel 0: values [1,2,3,4] - bias[0]=10
+  CHECK_EQ(result_broadcast->at(0, 0, 0), -9.0f);
+  CHECK_EQ(result_broadcast->at(0, 1, 1), -6.0f);
+  // Channel 1: values [5,6,7,8] - bias[1]=20
+  CHECK_EQ(result_broadcast->at(1, 0, 0), -15.0f);
+  CHECK_EQ(result_broadcast->at(1, 1, 1), -12.0f);
+  // Channel 2: values [9,10,11,12] - bias[2]=30
+  CHECK_EQ(result_broadcast->at(2, 0, 0), -21.0f);
+  CHECK_EQ(result_broadcast->at(2, 1, 1), -18.0f);
+  std::cout << "[Pass] sub(tensor3d, bias) - broadcasting.\n";
+
+  // Test 3: Subtraction with negative values
+  Tensor<float> neg_tensor(2, 2);
+  std::vector<float> neg_values = {-5, -3, 3, 5};
+  neg_tensor.Fill(neg_values, false);
+
+  Tensor<float> pos_tensor(2, 2);
+  std::vector<float> pos_values = {1, 2, 3, 4};
+  pos_tensor.Fill(pos_values, false);
+
+  auto neg_result = sub(neg_tensor, pos_tensor);
+  CHECK_EQ(neg_result->at(0, 0, 0), -6.0f);   // -5 - 1
+  CHECK_EQ(neg_result->at(0, 1, 0), -5.0f);   // -3 - 2
+  CHECK_EQ(neg_result->at(0, 0, 1), 0.0f);    // 3 - 3
+  CHECK_EQ(neg_result->at(0, 1, 1), 1.0f);    // 5 - 4
+  std::cout << "[Pass] sub() with negative values.\n\n";
+}
+
 int main() {
   std::cout << "====== DL4Cpp Tensor Comprehensive Tests ======\n\n";
 
@@ -428,6 +489,7 @@ int main() {
   TestSetData();
   TestShapes();
   TestTensorAdd();
+  TestTensorSubtract();
 
   std::cout << "====== All test cases passed! ======\n";
   return 0;

@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 
 # Enable compile_commands.json for IDE support
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_FLAG -O3)
 
 # vcpkg toolchain
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
