@@ -31,99 +31,92 @@ UBENCH_EX(Tensor, Fill) {
   }
 }
 
-// ===== Fixture-based Benchmarks =====
+// ===== Fixture-based Benchmarks using UBENCH_EX =====
 
-// Define a fixture struct
-struct TensorFixture {
-  Tensor<float> tensor;
-  std::vector<float> data;
-
-  void Setup() {
-    tensor = Tensor<float>(50, 50, 50);
-    data = std::vector<float>(125000, 1.0f);
-  }
-
-  void Teardown() {
-    // Cleanup code (if needed)
-  }
-};
-
-// Fixture setup function
-UBENCH_F_SETUP(TensorFixture) {
-  ubench_fixture->Setup();
-}
-
-// Fixture teardown function
-UBENCH_F_TEARDOWN(TensorFixture) {
-  ubench_fixture->Teardown();
-}
-
-// Benchmark using fixture
-UBENCH_F(TensorFixture, Add) {
+UBENCH_EX(Tensor, Add) {
+  // Setup phase - runs once before benchmark
+  Tensor<float> tensor(50, 50, 50);
   Tensor<float> other(50, 50, 50);
+  tensor.Rand();
   other.Fill(2.0f);
 
-  auto result = add(ubench_fixture->tensor, other);
+  UBENCH_DO_BENCHMARK() {
+    // Benchmark phase - runs multiple times
+    auto result = add(tensor, other);
+  }
 }
 
 // ===== Math Operations Tests =====
 
-UBENCH(Math, Add3D) {
+UBENCH_EX(Math, Add3D) {
+  // Setup
   Tensor<float> a(100, 100, 10);
   Tensor<float> b(100, 100, 10);
   a.Rand();
   b.Rand();
 
-  auto result = add(a, b);
+  UBENCH_DO_BENCHMARK() {
+    auto result = add(a, b);
+  }
 }
 
-UBENCH(Math, Sub3D) {
-  // Element-wise subtraction of two 3D tensors
+UBENCH_EX(Math, Sub3D) {
+  // Setup
   Tensor<float> a(100, 100, 10);
   Tensor<float> b(100, 100, 10);
   a.Rand();
   b.Rand();
 
-  auto result = sub(a, b);
+  UBENCH_DO_BENCHMARK() {
+    auto result = sub(a, b);
+  }
 }
 
-UBENCH(Math, AddScalarBroadcast) {
-  // Test broadcasting: 3D tensor + per-channel bias
+UBENCH_EX(Math, AddScalarBroadcast) {
+  // Setup - 3D tensor + per-channel bias
   Tensor<float> tensor(100, 50, 50);
   tensor.Rand();
   Tensor<float> bias(100, 1, 1);
   bias.Rand();
 
-  auto result = add(tensor, bias);
+  UBENCH_DO_BENCHMARK() {
+    auto result = add(tensor, bias);
+  }
 }
 
-UBENCH(Math, SubScalarBroadcast) {
-  // Test broadcasting: 3D tensor - per-channel bias
+UBENCH_EX(Math, SubScalarBroadcast) {
+  // Setup - 3D tensor - per-channel bias
   Tensor<float> tensor(100, 50, 50);
   tensor.Rand();
   Tensor<float> bias(100, 1, 1);
   bias.Rand();
 
-  auto result = sub(tensor, bias);
+  UBENCH_DO_BENCHMARK() {
+    auto result = sub(tensor, bias);
+  }
 }
 
-UBENCH(Math, Transform) {
+UBENCH_EX(Math, Transform) {
+  // Setup
   Tensor<float> tensor(100, 100, 10);
   tensor.Rand();
 
-  tensor.Transform([](float x) {
-    return x > 0.5f ? 1.0f : 0.0f;
-  });
+  UBENCH_DO_BENCHMARK() {
+    tensor.Transform([](float x) {
+      return x > 0.5f ? 1.0f : 0.0f;
+    });
+  }
 }
 
 // ===== Memory Access Pattern Tests =====
 
 UBENCH_EX(Access, RowMajor) {
+  // Setup
   Tensor<float> tensor(100, 100);
   tensor.Rand();
 
-  float sum = 0.0f;
   UBENCH_DO_BENCHMARK() {
+    float sum = 0.0f;
     // Row-major access
     for (size_t i = 0; i < 100; i++) {
       for (size_t j = 0; j < 100; j++) {
@@ -136,11 +129,12 @@ UBENCH_EX(Access, RowMajor) {
 }
 
 UBENCH_EX(Access, ColMajor) {
+  // Setup
   Tensor<float> tensor(100, 100);
   tensor.Rand();
 
-  float sum = 0.0f;
   UBENCH_DO_BENCHMARK() {
+    float sum = 0.0f;
     // Column-major access (may be slower)
     for (size_t j = 0; j < 100; j++) {
       for (size_t i = 0; i < 100; i++) {
