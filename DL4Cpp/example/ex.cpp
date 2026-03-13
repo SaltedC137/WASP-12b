@@ -580,6 +580,92 @@ void TestTensorDivide() {
   std::cout << "[Pass] div() resulting in fractions.\n\n";
 }
 
+void TestScalarAdd() {
+  std::cout << "--- Test 18: Scalar Addition (add with scalar) ---\n";
+
+  Tensor<float> tensor(2, 2, 2);
+  std::vector<float> values = {1, 2, 3, 4, 5, 6, 7, 8};
+  tensor.Fill(values, false);
+
+  auto result = add(tensor, 10.0f);
+  CHECK_EQ(result->at(0, 0, 0), 11.0f);
+  CHECK_EQ(result->at(0, 1, 1), 14.0f);
+  CHECK_EQ(result->at(1, 1, 1), 18.0f);
+  std::cout << "[Pass] add(tensor, scalar).\n\n";
+}
+
+void TestScalarSub() {
+  std::cout << "--- Test 19: Scalar Subtraction (sub with scalar) ---\n";
+
+  Tensor<float> tensor(2, 2, 2);
+  std::vector<float> values = {10, 20, 30, 40, 50, 60, 70, 80};
+  tensor.Fill(values, false);
+
+  auto result = sub(tensor, 5.0f);
+  CHECK_EQ(result->at(0, 0, 0), 5.0f);
+  CHECK_EQ(result->at(0, 1, 1), 35.0f);
+  CHECK_EQ(result->at(1, 1, 1), 75.0f);
+  std::cout << "[Pass] sub(tensor, scalar).\n\n";
+}
+
+void TestScalarMul() {
+  std::cout << "--- Test 20: Scalar Multiplication (mul with scalar) ---\n";
+
+  Tensor<float> tensor(2, 2, 2);
+  std::vector<float> values = {1, 2, 3, 4, 5, 6, 7, 8};
+  tensor.Fill(values, false);
+
+  auto result = mul(tensor, 3.0f);
+  CHECK_EQ(result->at(0, 0, 0), 3.0f);
+  CHECK_EQ(result->at(0, 1, 1), 12.0f);
+  CHECK_EQ(result->at(1, 1, 1), 24.0f);
+  std::cout << "[Pass] mul(tensor, scalar).\n\n";
+}
+
+void TestScalarDiv() {
+  std::cout << "--- Test 21: Scalar Division (div with scalar) ---\n";
+
+  Tensor<float> tensor(2, 2, 2);
+  std::vector<float> values = {10, 20, 30, 40, 50, 60, 70, 80};
+  tensor.Fill(values, false);
+
+  auto result = div(tensor, 2.0f);
+  CHECK_EQ(result->at(0, 0, 0), 5.0f);
+  CHECK_EQ(result->at(0, 1, 1), 20.0f);
+  CHECK_EQ(result->at(1, 1, 1), 40.0f);
+  std::cout << "[Pass] div(tensor, scalar).\n\n";
+}
+
+void TestElementExp() {
+  std::cout << "--- Test 22: Element-wise Exponential (exp) ---\n";
+
+  Tensor<float> tensor(2, 2);
+  std::vector<float> values = {0.0f, 1.0f, 2.0f, 3.0f};
+  tensor.Fill(values, false);  // column-major: |0 2| |1 3|
+
+  auto result = exp(tensor);
+  CHECK(FloatEq(result->at(0, 0, 0), std::exp(0.0f)));  // e^0 = 1
+  CHECK(FloatEq(result->at(0, 1, 0), std::exp(1.0f)));  // e^1 ≈ 2.718
+  CHECK(FloatEq(result->at(0, 0, 1), std::exp(2.0f)));  // e^2 ≈ 7.389
+  CHECK(FloatEq(result->at(0, 1, 1), std::exp(3.0f)));  // e^3 ≈ 20.086
+  std::cout << "[Pass] exp(tensor).\n\n";
+}
+
+void TestElementClip() {
+  std::cout << "--- Test 23: Element-wise Clip (clip) ---\n";
+
+  Tensor<float> tensor(2, 2);
+  std::vector<float> values = {-5.0f, 0.5f, 1.5f, 10.0f};
+  tensor.Fill(values, false);  // column-major: |-5  1.5| |0.5  10|
+
+  auto result = clip(tensor, 0.0f, 1.0f);
+  CHECK_EQ(result->at(0, 0, 0), 0.0f);   // -5 -> 0
+  CHECK_EQ(result->at(0, 1, 0), 0.5f);   // 0.5 -> 0.5
+  CHECK_EQ(result->at(0, 0, 1), 1.0f);   // 1.5 -> 1
+  CHECK_EQ(result->at(0, 1, 1), 1.0f);   // 10 -> 1
+  std::cout << "[Pass] clip(tensor, min, max).\n\n";
+}
+
 int main() {
   std::cout << "====== DL4Cpp Tensor Comprehensive Tests ======\n\n";
 
@@ -600,6 +686,12 @@ int main() {
   TestTensorSubtract();
   TestTensorMultiply();
   TestTensorDivide();
+  TestScalarAdd();
+  TestScalarSub();
+  TestScalarMul();
+  TestScalarDiv();
+  TestElementExp();
+  TestElementClip();
 
   std::cout << "====== All test cases passed! ======\n";
   return 0;

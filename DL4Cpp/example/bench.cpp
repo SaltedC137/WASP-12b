@@ -133,11 +133,62 @@ UBENCH_EX(Math, Div_ScalarBroadcast) {
 }
 
 // ===== Scalar Operations Benchmarks =====
-// NOTE: Scalar operations (add/sub/mul/div with scalar) not yet implemented
-// in tensor_math.cpp - commented out until implementation is available
+
+UBENCH_EX(Math, AddScalar) {
+  Tensor<float> tensor(100, 100, 100);
+  tensor.Rand();
+
+  UBENCH_DO_BENCHMARK() {
+    auto result = add(tensor, 1.0f);
+  }
+}
+
+UBENCH_EX(Math, SubScalar) {
+  Tensor<float> tensor(100, 100, 100);
+  tensor.Rand();
+
+  UBENCH_DO_BENCHMARK() {
+    auto result = sub(tensor, 1.0f);
+  }
+}
+
+UBENCH_EX(Math, MulScalar) {
+  Tensor<float> tensor(100, 100, 100);
+  tensor.Rand();
+
+  UBENCH_DO_BENCHMARK() {
+    auto result = mul(tensor, 2.0f);
+  }
+}
+
+UBENCH_EX(Math, DivScalar) {
+  Tensor<float> tensor(100, 100, 100);
+  tensor.Rand();
+
+  UBENCH_DO_BENCHMARK() {
+    auto result = div(tensor, 2.0f);
+  }
+}
 
 // ===== Advanced Operations Benchmarks =====
-// NOTE: exp() and clip() not yet implemented in tensor_math.cpp - commented out
+
+UBENCH_EX(Math, Exp) {
+  Tensor<float> tensor(100, 100, 100);
+  tensor.Rand();
+
+  UBENCH_DO_BENCHMARK() {
+    auto result = exp(tensor);
+  }
+}
+
+UBENCH_EX(Math, Clip) {
+  Tensor<float> tensor(100, 100, 100);
+  tensor.Rand();
+
+  UBENCH_DO_BENCHMARK() {
+    auto result = clip(tensor, 0.0f, 1.0f);
+  }
+}
 
 UBENCH_EX(Math, Transform_ReLU) {
   Tensor<float> tensor(100, 100, 100);
