@@ -77,6 +77,16 @@ UBENCH(Math, Add3D) {
   auto result = add(a, b);
 }
 
+UBENCH(Math, AddScalarBroadcast) {
+  // Test broadcasting: 3D tensor + per-channel bias
+  Tensor<float> tensor(100, 50, 50);
+  tensor.Rand();
+  Tensor<float> bias(100, 1, 1);
+  bias.Rand();
+
+  auto result = add(tensor, bias);
+}
+
 UBENCH(Math, Transform) {
   Tensor<float> tensor(100, 100, 10);
   tensor.Rand();
