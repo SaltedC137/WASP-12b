@@ -9,8 +9,11 @@ set(DL4CPP_SOURCES
     src/core/tensor.cpp
     src/core/tensor_math.cpp
     src/core/tensor_linalg.cpp
-    # src/core/tensor_nn.cpp      # TODO: Implement
-    src/log.cpp
+    src/nn/layer.cpp
+    src/utils/log.cpp
+    src/utils/thread_config.cpp
+
+    #src/nn/layer.cpp #TODO
 )
 
 # Create static library
@@ -28,6 +31,8 @@ target_include_directories(DL4Cpp
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/core>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/nn>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/utils>
         $<INSTALL_INTERFACE:include>
         $<INSTALL_INTERFACE:include/core>
 )

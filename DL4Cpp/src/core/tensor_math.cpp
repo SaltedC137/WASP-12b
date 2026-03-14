@@ -91,8 +91,10 @@ void Matmul(const ften &tensor1, const ften &tensor2, ften &output) {
   CHECK_EQ(channels, output.channels())
       << "Output channels must match input channels!";
 
+#pragma omp parallel for if (channels > 1)
   for (uint32_t c = 0; c < channels; ++c) {
-    output.slice(c) = tensor1.slice(c) * tensor2.slice(c);
+    output.slice(c).zeros();
+    output.slice(c) += tensor1.slice(c) * tensor2.slice(c);
   }
 }
 
