@@ -7,6 +7,7 @@
 
 #include "check.hpp"
 #include "tensor.hpp"
+#include "tensor_linalg.hpp"
 #include "tensor_math.hpp"
 #include <cmath>
 #include <iostream>
@@ -14,6 +15,7 @@
 
 using namespace ctl;
 using namespace ctl::math;
+using namespace ctl::linalg;
 
 // Helper function to compare floats with tolerance
 bool FloatEq(float a, float b, float eps = 1e-5f) {
@@ -666,6 +668,201 @@ void TestElementClip() {
   std::cout << "[Pass] clip(tensor, min, max).\n\n";
 }
 
+void TestBatchDeterminant() {
+  std::cout << "--- Test 24: Batch Determinant (det) ---\n";
+
+  // Test single 2x2 matrix
+  Tensor<float> mat1(1, 2, 2);
+  // |1 3|
+  // |2 4|  det = 1*4 - 2*3 = -2
+  std::vector<float> values1 = {1, 2, 3, 4};
+  mat1.Fill(values1, false);
+
+  auto det_result1 = det(mat1);
+  CHECK_EQ(det_result1->channels(), 1);
+  CHECK(FloatEq(det_result1->at(0, 0, 0), -2.0f));
+  std::cout << "[Pass] det() single matrix.\n";
+
+  // Test batch of 3 2x2 matrices
+  Tensor<float> mat_batch(3, 2, 2);
+  // Channel 0: |1 3| |2 4| det = -2
+  // Channel 1: |2 0| |0 2| det = 4
+  // Channel 2: |1 2| |3 4| det = -2
+  std::vector<float> batch_values = {1, 2, 3, 4,  2, 0, 0, 2,  1, 3, 2, 4};
+  mat_batch.Fill(batch_values, false);
+
+  auto det_result_batch = det(mat_batch);
+  CHECK_EQ(det_result_batch->channels(), 3);
+  CHECK(FloatEq(det_result_batch->at(0, 0, 0), -2.0f));
+  CHECK(FloatEq(det_result_batch->at(1, 0, 0), 4.0f));
+  CHECK(FloatEq(det_result_batch->at(2, 0, 0), -2.0f));
+  std::cout << "[Pass] det() batch matrices.\n\n";
+}
+
+void TestBatchTrace() {
+  std::cout << "--- Test 25: Batch Trace (trace) ---\n";
+
+  // Test single 3x3 matrix
+  Tensor<float> mat1(1, 3, 3);
+  // |1 2 3|
+  // |4 5 6|
+  // |7 8 9|  trace = 1 + 5 + 9 = 15
+  std::vector<float> values1 = {1, 4, 7, 2, 5, 8, 3, 6, 9};
+  mat1.Fill(values1, false);
+
+  auto trace_result1 = trace(mat1);
+  CHECK_EQ(trace_result1->channels(), 1);
+  CHECK(FloatEq(trace_result1->at(0, 0, 0), 15.0f));
+  std::cout << "[Pass] trace() single matrix.\n";
+
+  // Test batch of 2 3x3 matrices
+  Tensor<float> mat_batch(2, 3, 3);
+  // Channel 0: diagonal = 1, 5, 9 -> trace = 15
+  // Channel 1: diagonal = 2, 4, 6 -> trace = 12
+  // Column-major fill for 3x3:
+  // Channel 0: |1 2 3| |4 5 6| |7 8 9| -> diagonal: 1, 5, 9
+  // Channel 1: |2 3 4| |5 4 6| |7 8 6| -> diagonal: 2, 4, 6
+  std::vector<float> batch_values = {1, 4, 7, 2, 5, 8, 3, 6, 9,
+                                     2, 5, 7, 3, 4, 8, 4, 6, 6};
+  mat_batch.Fill(batch_values, false);
+
+  auto trace_result_batch = trace(mat_batch);
+  CHECK_EQ(trace_result_batch->channels(), 2);
+  CHECK(FloatEq(trace_result_batch->at(0, 0, 0), 15.0f));
+  CHECK(FloatEq(trace_result_batch->at(1, 0, 0), 12.0f));
+  std::cout << "[Pass] trace() batch matrices.\n\n";
+}
+
+void TestBatchInverse() {
+  std::cout << "--- Test 26: Batch Inverse (inv) ---\n";
+
+  // Test single 2x2 matrix
+  Tensor<float> mat1(1, 2, 2);
+  // |4 7|
+  // |2 6|  det = 24-14 = 10, inv = (1/10) * |6 -7| |-2 4|
+  std::vector<float> values1 = {4, 2, 7, 6};
+  mat1.Fill(values1, false);
+
+  auto inv_result1 = inv(mat1);
+  CHECK_EQ(inv_result1->channels(), mat1.channels());
+  CHECK_EQ(inv_result1->rows(), mat1.rows());
+  CHECK_EQ(inv_result1->cols(), mat1.cols());
+  // Inverse matrix: | 0.6 -0.7|
+  //                 |-0.2  0.4|
+  // Column-major: {0.6, -0.2, -0.7, 0.4}
+  CHECK(FloatEq(inv_result1->at(0, 0, 0), 0.6f));   // (row=0, col=0)
+  CHECK(FloatEq(inv_result1->at(0, 1, 0), -0.2f));  // (row=1, col=0)
+  CHECK(FloatEq(inv_result1->at(0, 0, 1), -0.7f));  // (row=0, col=1)
+  CHECK(FloatEq(inv_result1->at(0, 1, 1), 0.4f));   // (row=1, col=1)
+  std::cout << "[Pass] inv() single matrix.\n";
+
+  // Test batch of 2 2x2 matrices
+  Tensor<float> mat_batch(2, 2, 2);
+  // Channel 0: |1 0| |0 1| (identity, inv = itself)
+  // Channel 1: |2 0| |0 2| inv = |0.5 0| |0 0.5|
+  std::vector<float> batch_values = {1, 0, 0, 1, 2, 0, 0, 2};
+  mat_batch.Fill(batch_values, false);
+
+  auto inv_result_batch = inv(mat_batch);
+  CHECK_EQ(inv_result_batch->channels(), 2);
+  // Channel 0: identity
+  CHECK(FloatEq(inv_result_batch->at(0, 0, 0), 1.0f));
+  CHECK(FloatEq(inv_result_batch->at(0, 1, 0), 0.0f));
+  CHECK(FloatEq(inv_result_batch->at(0, 0, 1), 0.0f));
+  CHECK(FloatEq(inv_result_batch->at(0, 1, 1), 1.0f));
+  // Channel 1: 0.5 * identity
+  CHECK(FloatEq(inv_result_batch->at(1, 0, 0), 0.5f));
+  CHECK(FloatEq(inv_result_batch->at(1, 1, 0), 0.0f));
+  CHECK(FloatEq(inv_result_batch->at(1, 0, 1), 0.0f));
+  CHECK(FloatEq(inv_result_batch->at(1, 1, 1), 0.5f));
+  std::cout << "[Pass] inv() batch matrices.\n\n";
+}
+
+void TestBatchTranspose() {
+  std::cout << "--- Test 27: Batch Transpose (transpose) ---\n";
+
+  // Test single 2x3 matrix
+  Tensor<float> mat1(1, 2, 3);
+  // |1 2 3|
+  // |4 5 6|
+  // Column-major: {1, 4, 2, 5, 3, 6}
+  std::vector<float> values1 = {1, 4, 2, 5, 3, 6};
+  mat1.Fill(values1, false);
+
+  auto trans_result1 = transpose(mat1);
+  CHECK_EQ(trans_result1->channels(), 1);
+  CHECK_EQ(trans_result1->rows(), 3);
+  CHECK_EQ(trans_result1->cols(), 2);
+  // Transposed: |1 4|
+  //             |2 5|
+  //             |3 6|
+  // Column-major: {1, 2, 3, 4, 5, 6}
+  CHECK_EQ(trans_result1->at(0, 0, 0), 1.0f);
+  CHECK_EQ(trans_result1->at(0, 1, 0), 2.0f);
+  CHECK_EQ(trans_result1->at(0, 2, 0), 3.0f);
+  CHECK_EQ(trans_result1->at(0, 0, 1), 4.0f);
+  CHECK_EQ(trans_result1->at(0, 1, 1), 5.0f);
+  CHECK_EQ(trans_result1->at(0, 2, 1), 6.0f);
+  std::cout << "[Pass] transpose() single matrix.\n";
+
+  // Test batch of 2 2x2 matrices
+  Tensor<float> mat_batch(2, 2, 2);
+  // Channel 0: |1 2| |3 4| -> transpose -> |1 3| |2 4|
+  // Channel 1: |5 6| |7 8| -> transpose -> |5 7| |6 8|
+  // Column-major fill:
+  // Channel 0: {1, 3, 2, 4} -> matrix |1 2| |3 4| -> transpose -> |1 3| |2 4| -> {1, 2, 3, 4}
+  // Channel 1: {5, 7, 6, 8} -> matrix |5 6| |7 8| -> transpose -> |5 7| |6 8| -> {5, 6, 7, 8}
+  std::vector<float> batch_values = {1, 3, 2, 4, 5, 7, 6, 8};
+  mat_batch.Fill(batch_values, false);
+
+  auto trans_result_batch = transpose(mat_batch);
+  CHECK_EQ(trans_result_batch->channels(), 2);
+  CHECK_EQ(trans_result_batch->rows(), 2);
+  CHECK_EQ(trans_result_batch->cols(), 2);
+  // Channel 0: transposed |1 3| |2 4|, column-major: {1, 2, 3, 4}
+  CHECK_EQ(trans_result_batch->at(0, 0, 0), 1.0f);
+  CHECK_EQ(trans_result_batch->at(0, 1, 0), 2.0f);
+  CHECK_EQ(trans_result_batch->at(0, 0, 1), 3.0f);
+  CHECK_EQ(trans_result_batch->at(0, 1, 1), 4.0f);
+  // Channel 1: transposed |5 7| |6 8|, column-major: {5, 6, 7, 8}
+  CHECK_EQ(trans_result_batch->at(1, 0, 0), 5.0f);
+  CHECK_EQ(trans_result_batch->at(1, 1, 0), 6.0f);
+  CHECK_EQ(trans_result_batch->at(1, 0, 1), 7.0f);
+  CHECK_EQ(trans_result_batch->at(1, 1, 1), 8.0f);
+  std::cout << "[Pass] transpose() batch matrices.\n\n";
+}
+
+void TestNormsAndDot() {
+  std::cout << "--- Test 28: Norms and Dot Product ---\n";
+
+  // Test Euclidean norm
+  Tensor<float> tensor1(2, 2);
+  std::vector<float> values1 = {3, 4, 0, 0};
+  tensor1.Fill(values1, false);
+  float norm_val = norm(tensor1);
+  CHECK(FloatEq(norm_val, 5.0f));  // sqrt(9+16) = 5
+  std::cout << "[Pass] norm() L2 norm.\n";
+
+  // Test L1 norm
+  Tensor<float> tensor2(2, 2);
+  std::vector<float> values2 = {-3, 4, -5, 6};
+  tensor2.Fill(values2, false);
+  float norm1_val = norm1(tensor2);
+  CHECK(FloatEq(norm1_val, 18.0f));  // |−3|+|4|+|−5|+|6| = 18
+  std::cout << "[Pass] norm1() L1 norm.\n";
+
+  // Test dot product
+  Tensor<float> vec1(1, 3);
+  Tensor<float> vec2(1, 3);
+  std::vector<float> v1_values = {1, 2, 3};
+  std::vector<float> v2_values = {4, 5, 6};
+  vec1.Fill(v1_values, false);
+  vec2.Fill(v2_values, false);
+  float dot_val = dot(vec1, vec2);
+  CHECK(FloatEq(dot_val, 32.0f));  // 1*4 + 2*5 + 3*6 = 32
+  std::cout << "[Pass] dot() product.\n\n";
+}
+
 int main() {
   std::cout << "====== DL4Cpp Tensor Comprehensive Tests ======\n\n";
 
@@ -692,6 +889,11 @@ int main() {
   TestScalarDiv();
   TestElementExp();
   TestElementClip();
+  TestBatchDeterminant();
+  TestBatchTrace();
+  TestBatchInverse();
+  TestBatchTranspose();
+  TestNormsAndDot();
 
   std::cout << "====== All test cases passed! ======\n";
   return 0;

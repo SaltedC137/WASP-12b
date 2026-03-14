@@ -8,7 +8,7 @@ find_package(Armadillo REQUIRED)
 set(DL4CPP_SOURCES
     src/core/tensor.cpp
     src/core/tensor_math.cpp
-    # src/core/tensor_linalg.cpp  # TODO: Implement
+    src/core/tensor_linalg.cpp
     # src/core/tensor_nn.cpp      # TODO: Implement
     src/log.cpp
 )

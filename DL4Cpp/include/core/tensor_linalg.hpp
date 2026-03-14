@@ -13,6 +13,7 @@
 #ifndef TENSOR_LINALG_HPP
 #define TENSOR_LINALG_HPP
 
+
 #include <armadillo>
 #pragma once
 
@@ -49,22 +50,28 @@ float Absolute_value_norm(const ften &tensor);
 float Transvection(const ften &tensor1, const ften &tensor2);
 
 /**
- * @brief Compute the determinant of a square matrix tensor
- * @param tensor The input tensor (must be a square matrix)
- * @return float The determinant value
- * @details Computes det(tensor) for a square matrix.
- *          @warning The input tensor must represent a square matrix.
+ * @brief Compute the batch determinant of square matrices
+ * @param tensor The input tensor (must be square matrices with multiple channels)
+ * @param output Reference to the output tensor storing determinant values for each channel
+ * @details Computes det(tensor) for each channel in parallel. The input tensor
+ *          must have shape (rows, rows, channels) where rows == cols for each slice.
+ *          Output tensor should have size equal to the number of channels.
+ *          Uses OpenMP for parallel processing when channels > 1.
+ * @warning The input tensor must represent square matrices (rows == cols).
  */
-float Determinant(const ften &tensor);
+void Batch_Determinant(const ften &tensor, ften &output);
 
 /**
- * @brief Compute the trace of a square matrix tensor
- * @param tensor The input tensor (must be a square matrix)
- * @return float The trace value
- * @details Computes the sum of diagonal elements: sum(a_ii).
- *          @warning The input tensor must represent a square matrix.
+ * @brief Compute the trace of square matrices in batch
+ * @param tensor The input tensor (must be square matrices with multiple channels)
+ * @param output Reference to the output tensor storing trace values for each channel
+ * @details Computes trace(tensor) for each channel in parallel. The input tensor
+ *          must have shape (rows, rows, channels) where rows == cols for each slice.
+ *          Output tensor should have size equal to the number of channels.
+ *          Uses OpenMP for parallel processing when channels > 1.
+ * @warning The input tensor must represent square matrices (rows == cols).
  */
-float Trace(const ften &tensor);
+void Batch_Trace(const ften &tensor, ften &output);
 
 /**
  * @brief Compute the outer product of two tensors
@@ -77,20 +84,25 @@ float Trace(const ften &tensor);
 void Outer_product(const ften &tensor1, const ften &tensor2, ften &output);
 
 /**
- * @brief Compute the inverse of a square matrix tensor
- * @param tensor The input tensor (must be invertible square matrix)
- * @param output Reference to the output tensor storing the result
- * @details Computes tensor^(-1) such that tensor · tensor^(-1) = I.
- *          @warning The input tensor must be a non-singular square matrix.
+ * @brief Compute the inverse of square matrices in batch
+ * @param tensor The input tensor (must be invertible square matrices with multiple channels)
+ * @param output Reference to the output tensor storing inverse matrices for each channel
+ * @details Computes tensor^(-1) for each channel in parallel such that tensor · tensor^(-1) = I.
+ *          The input tensor must have shape (rows, rows, channels) where rows == cols for each slice.
+ *          Output tensor should have the same shape as the input tensor.
+ *          Uses OpenMP for parallel processing when channels > 1.
+ * @warning The input tensor must be non-singular square matrices.
  */
-void Inverse(const ften &tensor, ften &output);
+void Batch_Inverse(const ften &tensor, ften &output);
 
 /**
- * @brief Compute the transpose of a tensor
+ * @brief Compute the transpose of matrices in batch
  * @param tensor The input tensor
- * @param output Reference to the output tensor storing the result
- * @details Computes tensor^T, swapping rows and columns.
- *          For a matrix A, output[i,j] = A[j,i].
+ * @param output Reference to the output tensor storing the transposed result
+ * @details Computes tensor^T for each channel in parallel, swapping rows and columns.
+ *          For a matrix A, output[i,j] = A[j,i]. The output tensor must have
+ *          shape (cols, rows, channels) if input is (rows, cols, channels).
+ *          Uses OpenMP for parallel processing when channels > 1.
  */
 void Transposition(const ften &tensor, ften &output);
 
@@ -125,20 +137,30 @@ inline float dot(const ften &tensor1, const ften &tensor2) {
 }
 
 /**
- * @brief Compute the determinant of a square matrix
- * @param tensor The input tensor (must be a square matrix)
- * @return float The determinant value
- * @details Convenience wrapper for Determinant().
+ * @brief Compute the batch determinant of square matrices
+ * @param tensor The input tensor (must be square matrices with multiple channels)
+ * @return sft Shared pointer to a tensor containing determinant values for each channel
+ * @details Convenience wrapper for Batch_Determinant(). Creates an output tensor
+ *          with shape (channels, 1, 1) and computes determinants for all channels.
  */
-inline float det(const ften &tensor) { return Determinant(tensor); }
+inline sft det(const ften &tensor) {
+  sft output = std::make_shared<ften>(tensor.channels(), 1, 1);
+  Batch_Determinant(tensor, *output);
+  return output;
+}
 
 /**
- * @brief Compute the trace of a square matrix
- * @param tensor The input tensor (must be a square matrix)
- * @return float The trace value
- * @details Convenience wrapper for Trace().
+ * @brief Compute the batch trace of square matrices
+ * @param tensor The input tensor (must be square matrices with multiple channels)
+ * @return sft Shared pointer to a tensor containing trace values for each channel
+ * @details Convenience wrapper for Batch_Trace(). Creates an output tensor
+ *          with shape (channels, 1, 1) and computes traces for all channels.
  */
-inline float trace(const ften &tensor) { return Trace(tensor); }
+inline sft trace(const ften &tensor) {
+  sft output = std::make_shared<ften>(tensor.channels(), 1, 1);
+  Batch_Trace(tensor, *output);
+  return output;
+}
 
 /**
  * @brief Compute the outer product returning a new tensor
@@ -155,11 +177,11 @@ inline sft outer(const ften &tensor1, const ften &tensor2) {
 }
 
 /**
- * @brief Compute the transpose returning a new tensor
+ * @brief Compute the batch transpose of matrices
  * @param tensor The input tensor
- * @return sft Shared pointer to the result tensor
- * @details Creates a new tensor with transposed dimensions.
- *          Convenient for expression chaining.
+ * @return sft Shared pointer to the result tensor containing transposed matrices for each channel
+ * @details Convenience wrapper for Transposition(). Creates a new tensor with transposed dimensions
+ *          (cols, rows, channels) and computes the transpose for all channels.
  */
 inline sft transpose(const ften &tensor) {
   sft output =
@@ -169,15 +191,16 @@ inline sft transpose(const ften &tensor) {
 }
 
 /**
- * @brief Compute the inverse returning a new tensor
- * @param tensor The input tensor (must be invertible square matrix)
- * @return sft Shared pointer to the result tensor
- * @details Creates a new tensor and computes the matrix inverse.
- *          @warning The input tensor must be a non-singular square matrix.
+ * @brief Compute the batch inverse of square matrices
+ * @param tensor The input tensor (must be invertible square matrices with multiple channels)
+ * @return sft Shared pointer to the result tensor containing inverse matrices for each channel
+ * @details Convenience wrapper for Batch_Inverse(). Creates a new tensor with the same shape
+ *          as the input and computes the matrix inverse for all channels.
+ *          @warning The input tensor must be non-singular square matrices.
  */
 inline sft inv(const ften &tensor) {
   sft output = std::make_shared<ften>(tensor.shapes());
-  Inverse(tensor, *output);
+  Batch_Inverse(tensor, *output);
   return output;
 }
 
