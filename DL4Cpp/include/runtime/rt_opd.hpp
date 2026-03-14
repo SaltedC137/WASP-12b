@@ -25,16 +25,16 @@ enum class RTDataType {
 
 template <typename T>
 
-struct RTOperand {
-  explicit RTOperand() = default;
+struct RTOperandBase {
+  explicit RTOperandBase() = default;
 
-  explicit RTOperand(std::string name, std::vector<int32_t> shapes,
-                     std::vector<std::shared_ptr<Tensor<T>>> data,
-                     RTDataType type)
+  explicit RTOperandBase(std::string name, std::vector<int32_t> shapes,
+                         std::vector<std::shared_ptr<Tensor<T>>> data,
+                         RTDataType type)
       : name(std::move(name)), shapes(std::move(shapes)), type(type) {}
 
-  explicit RTOperand(std::string name, std::vector<int32_t> shapes,
-                     uint32_t data_size, RTDataType type)
+  explicit RTOperandBase(std::string name, std::vector<int32_t> shapes,
+                         uint32_t data_size, RTDataType type)
       : name(std::move(name)), shapes(std::move(shapes)), type(type) {
     datas.resize(data_size);
   }
@@ -50,8 +50,7 @@ struct RTOperand {
   RTDataType type = RTDataType::kTypeUnknown;
 };
 
-template <typename T>
-size_t RTOperand<T>::size() const {
+template <typename T> size_t RTOperandBase<T>::size() const {
   if (shapes.empty()) {
     return 0;
   }
@@ -59,6 +58,8 @@ size_t RTOperand<T>::size() const {
       std::accumulate(shapes.begin(), shapes.end(), 1, std::multiplies());
   return size;
 }
+
+using RTOperand = RTOperandBase<float>;
 
 } // namespace ctl
 
