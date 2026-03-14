@@ -12,35 +12,46 @@ DL4Cpp aims to provide a lightweight, educational implementation of deep learnin
 
 - **Tensor**: Multi-dimensional tensor data structures (1D/2D/3D) with efficient memory management
 - **Math Operations**: Element-wise arithmetic, matrix multiplication, scalar operations, and transformations
-- **Utilities**: CHECK macros for logging and assertions (similar to Google glog)
-- **Backend**: Built on top of Armadillo for optimized linear algebra
+- **Linear Algebra**: Norms, dot products, matrix operations (transpose, inverse, determinant, trace)
+- **Neural Networks**: Layer abstractions (under development)
+- **Utilities**: CHECK macros for logging and assertions, thread configuration management
+- **Backend**: Built on top of Armadillo for optimized linear algebra with OpenMP parallelization
 
 ## Project Structure
 
 ```
 WASP-12b/
 ├── DL4Cpp/
-│   ├── include/              # Header files
+│   ├── include/                  # Header files
 │   │   ├── core/
-│   │   │   ├── tensor.hpp        # Tensor class definition
-│   │   │   ├── tensor_math.hpp   # Tensor mathematical operations
-│   │   │   └── tensor_nn.hpp     # Neural network components (TODO)
-│   │   ├── check.hpp         # CHECK macros for logging and assertions
-│   │   └── log.hpp           # Logging utilities
-│   ├── src/                  # Implementation files
+│   │   │   ├── tensor.hpp            # Tensor class definition
+│   │   │   ├── tensor_math.hpp       # Tensor mathematical operations
+│   │   │   └── tensor_linalg.hpp     # Linear algebra operations
+│   │   ├── nn/
+│   │   │   └── layer.hpp             # Neural network layer components
+│   │   └── utils/
+│   │       ├── check.hpp             # CHECK macros for assertions
+│   │       ├── log.hpp               # Logging utilities
+│   │       ├── thread_config.hpp     # Thread management configuration
+│   │       └── ubench.h              # Micro-benchmark framework
+│   ├── src/                      # Implementation files
 │   │   ├── core/
-│   │   │   ├── tensor.cpp        # Tensor class implementation
-│   │   │   ├── tensor_math.cpp   # Tensor math operations implementation (TODO)
-│   │   │   └── tensor_nn.cpp     # Neural network components implementation (TODO)
-│   │   └── log.cpp         # Logging implementation
-│   ├── example/              # Example code
-│   │   ├── ex.cpp            # Feature demonstration examples
-│   │   └── bench.cpp         # Performance benchmarks
-│   └── CMakeLists.txt        # Build configuration
-├── out/                      # Build output directory
-│   └── bin/                  # Final output files (executables, libraries, headers)
-├── build/                    # CMake build directory
-└── CMakeLists.txt            # Root project configuration
+│   │   │   ├── tensor.cpp            # Tensor class implementation
+│   │   │   ├── tensor_math.cpp       # Tensor math operations
+│   │   │   └── tensor_linalg.cpp     # Linear algebra operations
+│   │   ├── nn/
+│   │   │   └── layer.cpp             # Neural network layer implementation
+│   │   └── utils/
+│   │       ├── log.cpp               # Logging implementation
+│   │       └── thread_config.cpp     # Thread management implementation
+│   ├── example/                  # Example code
+│   │   ├── ex.cpp                # Feature demonstration examples
+│   │   └── bench.cpp             # Performance benchmarks
+│   └── CMakeLists.txt            # Build configuration
+├── out/                          # Build output directory
+│   └── bin/                      # Final output files
+├── build/                        # CMake build directory
+└── CMakeLists.txt                # Root project configuration
 ```
 
 ## Building
@@ -90,10 +101,9 @@ After building, output files are located in the `out/bin/` directory:
 
 | File | Description |
 |------|-------------|
-| `lib/DL4Cpp.lib` | Static library (Windows) |
-| `lib/libDL4Cpp.a` | Static library (Linux/macOS) |
-| `bin/dl4cpp_test.exe` | Test executable |
-| `bin/dl4cpp_bench.exe` | Benchmark executable |
+| `libDL4Cpp.lib` / `libDL4Cpp.a` | Static library |
+| `dl4cpp_test.exe` | Test executable |
+| `dl4cpp_bench.exe` | Benchmark executable |
 | `include/` | Header files copy |
 
 ### Running Tests
@@ -109,10 +119,17 @@ Or run the test executable directly:
 ./out/bin/dl4cpp_test.exe
 ```
 
+### Running Benchmarks
+
+```bash
+./out/bin/dl4cpp_bench.exe
+```
+
 ## Requirements
 
 - **C++23** or later
 - **Armadillo** linear algebra library
+- **OpenMP** for parallel computing
 - **CMake 3.14+**
 
 ### Installing Dependencies
@@ -121,7 +138,8 @@ Using vcpkg (recommended):
 
 ```bash
 # Set VCPKG_ROOT environment variable
-set VCPKG_ROOT=C:\path\to\vcpkg  # Windows
+set VCPKG_ROOT=C:\path\to\vcpkg  # Windows (cmd)
+$env:VCPKG_ROOT="C:\path\to\vcpkg"  # Windows (PowerShell)
 
 # Install Armadillo
 vcpkg install armadillo
@@ -153,22 +171,113 @@ vcpkg install armadillo:x64-windows
 - [x] Data export (`values`, `Show`)
 - [x] Raw pointer access (`raw_ptr`, `matrix_raw_ptr`)
 
-### Math Operations (Header Only)
+### Mathematical Operations
 - [x] Element-wise operations (`ElementAdd`, `ElementSub`, `ElementMultiply`, `ElementDivide`)
+- [x] Broadcasting operations (tensor + per-channel bias)
 - [x] Matrix multiplication (`Matmul`)
 - [x] Scalar operations (`AddScalar`, `SubScalar`, `MultiplyScalar`, `DivideScalar`)
 - [x] Element-wise exponential (`ElementExp`)
 - [x] Element-wise clipping (`ElementClip`)
 - [x] Functional interface (inline functions returning `std::shared_ptr`)
 
+### Linear Algebra Operations
+- [x] Euclidean norm (L2 norm)
+- [x] L1 norm (absolute value norm)
+- [x] Dot product / inner product
+- [x] Batch determinant
+- [x] Batch trace
+- [x] Batch matrix inverse
+- [x] Matrix transpose
+- [x] Outer product
+
+### Neural Network Components
+- [x] Layer abstraction (base class)
+
+### Thread Management
+- [x] Global thread count configuration
+- [x] Scheduling policy control (STATIC, DYNAMIC, GUIDED, AUTO)
+- [x] Parallel execution enable/disable switch
+- [x] Nested parallelism control
+- [x] RAII thread guard for scoped configuration
+
 ### Utilities
 - [x] CHECK macros (`CHECK`, `CHECK_EQ`, `CHECK_LT`, `CHECK_LE`, `CHECK_GE`)
-- [x] Logging (`FMessageLogger`, `FMessageVoidify`)
+- [x] Logging system (`LOG(INFO)`, `LOG(DEBUG)`, `LOG(WARNING)`, `LOG(ERROR)`, `LOG(FATAL)`)
+- [x] OpenMP parallelization with strict thread management
+
+## Usage Examples
+
+### Basic Tensor Operations
+
+```cpp
+#include "tensor.hpp"
+#include "tensor_math.hpp"
+#include "tensor_linalg.hpp"
+
+using namespace ctl;
+using namespace ctl::math;
+using namespace ctl::linalg;
+
+int main() {
+    // Create tensors
+    Tensor<float> a(2, 3, 4);  // 3D tensor: 2 channels, 3x4
+    Tensor<float> b(2, 3, 4);
+    
+    // Fill with random values
+    a.Rand();
+    b.Rand();
+    
+    // Element-wise addition (functional style)
+    auto result = add(a, b);
+    
+    // Element-wise multiplication (in-place)
+    Tensor<float> output(2, 3, 4);
+    ElementMultiply(a, b, output);
+    
+    // Matrix operations
+    Tensor<float> mat(4, 10, 10);  // 4 batched 10x10 matrices
+    mat.Rand();
+    
+    // Compute determinant for each matrix
+    auto det_result = det(mat);
+    
+    // Compute L2 norm
+    float norm = norm(a);
+    
+    return 0;
+}
+```
+
+### Thread Configuration
+
+```cpp
+#include "thread_config.hpp"
+
+using namespace ctl;
+
+int main() {
+    // Get available CPU cores
+    uint32_t cores = ThreadConfig::getNumCores();
+    
+    // Set thread count
+    ThreadConfig::getInstance().set_thread_count(4);
+    
+    // Disable parallel execution (for debugging)
+    ThreadConfig::getInstance().setParallelEnabled(false);
+    
+    // Use RAII guard for scoped thread configuration
+    {
+        ThreadGuard guard(8);  // Use 8 threads in this scope
+        // ... parallel operations ...
+    }  // Automatically restores previous settings
+    
+    return 0;
+}
+```
 
 ## TODO
 
 ### High Priority
-- [ ] Implement math operations in `src/core/tensor_math.cpp`
 - [ ] Convolution operations (Conv2D, Conv3D)
 - [ ] Pooling layers (MaxPool, AvgPool)
 - [ ] Activation functions (ReLU, Sigmoid, Tanh, Softmax)
@@ -178,19 +287,25 @@ vcpkg install armadillo:x64-windows
 - [ ] Optimizers (SGD, Adam)
 
 ### Medium Priority
-- [ ] LOG macros implementation
 - [ ] Batch normalization
 - [ ] Dropout layer
 - [ ] Data loading utilities
 - [ ] Model serialization (save/load weights)
 - [ ] Unit tests for all components
+- [ ] Improved thread pool implementation
 
 ### Low Priority
 - [ ] GPU acceleration support (CUDA backend)
-- [ ] Multi-threading for parallel operations
 - [ ] Documentation website (Doxygen)
 - [ ] Python bindings (pybind11)
-- [ ] Example tutorials and benchmarks
+- [ ] Example tutorials and extended benchmarks
+
+## Performance Notes
+
+- **Parallel Operations**: Element-wise operations, broadcasting, and batch linear algebra use OpenMP for parallel execution
+- **Thread Management**: Centralized `ThreadConfig` provides strict control over thread count and scheduling
+- **Memory Layout**: Row-major ordering for compatibility with standard C++ conventions
+- **Armadillo Backend**: Leverages optimized BLAS/LAPACK routines for matrix operations
 
 ## License
 
@@ -198,4 +313,4 @@ This project is licensed under the MIT License.
 
 ---
 
-*Last updated: 2026-03-13*
+*Last updated: 2026-03-14*
