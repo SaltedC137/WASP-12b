@@ -11,9 +11,9 @@ set(DL4CPP_SOURCES
     src/core/tensor_linalg.cpp
     src/nn/layer.cpp
     src/utils/log.cpp
-    src/utils/thread_config.cpp
+    # src/utils/thread_config.cpp
 
-    #src/nn/layer.cpp #TODO
+    # src/nn/layer.cpp #TODO
 )
 
 # Create static library
