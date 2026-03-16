@@ -9,6 +9,7 @@
 #include <memory>
 #include <numeric>
 #include <vector>
+
 namespace ctl {
 
 enum class RTDataType {
@@ -60,7 +61,9 @@ template <typename T> size_t RTOperandBase<T>::size() const {
 }
 
 using RTOperand = RTOperandBase<float>;
+using RTOperandU8 = RTOperandBase<int8_t>;
+
+using RTOperandPtr = std::shared_ptr<RTOperand>;
 
 } // namespace ctl
-
 #endif // RUNTIME_OPERAND_HPP
