@@ -794,7 +794,7 @@ static void load_attribute(Operator* op, const std::string& key, const std::stri
 
     if (filesize != bytesize)
     {
-        fprintf(stderr, "file size not match expect %lu but got %lu\n", bytesize, filesize);
+        fprintf(stderr, "file size not match expect %zu but got %zu\n", bytesize, filesize);
     }
 
     a.data.resize(bytesize);
@@ -968,7 +968,7 @@ int Graph::save(const std::string& parampath, const std::string& binpath)
                 fprintf(paramfp, "%d", attr.shape[attr.shape.size() - 1]);
             fprintf(paramfp, ")");
 
-            fprintf(paramfp, type_to_string(attr.type));
+            fprintf(paramfp, "%s", type_to_string(attr.type));
 
             std::string filename = op->name + "." + it.first;
             szw.write_file(filename, attr.data.data(), attr.data.size());
@@ -1010,7 +1010,7 @@ int Graph::save(const std::string& parampath, const std::string& binpath)
             }
             fprintf(paramfp, ")");
 
-            fprintf(paramfp, type_to_string(oprand->type));
+            fprintf(paramfp, "%s", type_to_string(oprand->type));
         }
 
         for (const Operand* oprand : op->outputs)
@@ -1037,7 +1037,7 @@ int Graph::save(const std::string& parampath, const std::string& binpath)
             }
             fprintf(paramfp, ")");
 
-            fprintf(paramfp, type_to_string(oprand->type));
+            fprintf(paramfp, "%s", type_to_string(oprand->type));
         }
 
         fprintf(paramfp, "\n");
