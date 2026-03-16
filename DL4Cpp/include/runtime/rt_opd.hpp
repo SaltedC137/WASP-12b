@@ -9,20 +9,11 @@
 #include <memory>
 #include <numeric>
 #include <vector>
+#include "runtime/rt_type.hpp"
+
 
 namespace ctl {
 
-enum class RTDataType {
-  kTypeUnknown = 0,
-  kTypeFloat32 = 1,
-  kTypeFloat64 = 2,
-  kTypeFloat16 = 3,
-  kTypeInt32 = 4,
-  kTypeInt64 = 5,
-  kTypeInt16 = 6,
-  kTypeInt8 = 7,
-  kTypeUInt8 = 8,
-};
 
 template <typename T>
 
@@ -31,11 +22,11 @@ struct RTOperandBase {
 
   explicit RTOperandBase(std::string name, std::vector<int32_t> shapes,
                          std::vector<std::shared_ptr<Tensor<T>>> data,
-                         RTDataType type)
+                         RuntimeDataType type)
       : name(std::move(name)), shapes(std::move(shapes)), type(type) {}
 
   explicit RTOperandBase(std::string name, std::vector<int32_t> shapes,
-                         uint32_t data_size, RTDataType type)
+                         uint32_t data_size, RuntimeDataType type)
       : name(std::move(name)), shapes(std::move(shapes)), type(type) {
     datas.resize(data_size);
   }
@@ -48,7 +39,7 @@ struct RTOperandBase {
 
   std::vector<std::shared_ptr<Tensor<T>>> datas;
 
-  RTDataType type = RTDataType::kTypeUnknown;
+  RuntimeDataType type = RuntimeDataType::TypeUnknown;
 };
 
 template <typename T> size_t RTOperandBase<T>::size() const {
