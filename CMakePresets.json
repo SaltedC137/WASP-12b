@@ -14,7 +14,6 @@
             "binaryDir": "${sourceDir}/build",
             "installDir": "${sourceDir}/out",
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": {"value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake", "type": "CACHE"},
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/out/bin",
                 "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/out/bin",

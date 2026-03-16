@@ -11,7 +11,8 @@ set(DL4CPP_SOURCES
     src/core/tensor_linalg.cpp
     src/nn/layer.cpp
     src/utils/log.cpp
-    # src/utils/thread_config.cpp
+    src/pnnx/ir.cpp
+    src/pnnx/store_zip.cpp
 
     # src/nn/layer.cpp #TODO
 )
@@ -33,6 +34,7 @@ target_include_directories(DL4Cpp
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/core>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/nn>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/utils>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/pnnx>
         $<INSTALL_INTERFACE:include>
         $<INSTALL_INTERFACE:include/core>
 )

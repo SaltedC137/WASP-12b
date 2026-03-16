@@ -12,8 +12,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-#include "pnnx/ir.h"
-
+#include "ir.h"
 #include <limits.h>
 #include <stdint.h>
 #include <string.h>
@@ -22,8 +21,7 @@
 #include <sstream>
 #include <string>
 #include <stack>
-
-#include "pnnx/store_zip.hpp"
+#include "store_zip.hpp"
 
 // #include "utils.h"
 
