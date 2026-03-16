@@ -13,7 +13,7 @@
 #ifndef CHECK_HPP_
 #define CHECK_HPP_
 
-#include "log.hpp" // IWYU pragma: export
+#include "utils/log.hpp" // IWYU pragma: export
 
 /**
  * @brief Compiler-specific branch prediction hints

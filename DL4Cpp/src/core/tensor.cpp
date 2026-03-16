@@ -4,9 +4,9 @@
  * @date 2026-03-04 11:10:27
  */
 
-#include "tensor.hpp"
-#include "check.hpp"
-#include "log.hpp"
+#include "core/tensor.hpp"
+#include "utils/check.hpp"
+#include "utils/log.hpp"
 
 #include <algorithm>
 #include <armadillo>

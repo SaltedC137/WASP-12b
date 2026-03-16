@@ -4,8 +4,8 @@
  * @date 2026-03-04 11:10:27
  */
 
-#include "tensor_math.hpp"
-#include "check.hpp"
+#include "core/tensor_math.hpp"
+#include "utils/check.hpp"
 #include <algorithm>
 #include <armadillo>
 #include <cstddef>

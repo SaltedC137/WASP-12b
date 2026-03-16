@@ -9,11 +9,11 @@
 
 // UBENCH_IMPLEMENTATION must be defined before including ubench.h
 #define UBENCH_IMPLEMENTATION
-#include "ubench.h"
+#include "utils/ubench.h"
 
-#include "tensor.hpp"
-#include "tensor_math.hpp"
-#include "tensor_linalg.hpp"
+#include "core/tensor.hpp"
+#include "core/tensor_math.hpp"
+#include "core/tensor_linalg.hpp"
 #include <vector>
 #include <cmath>
 

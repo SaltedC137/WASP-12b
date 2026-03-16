@@ -13,7 +13,7 @@
 #define TENSOR_MATH_HPP
 
 
-#include "tensor.hpp"
+#include "core/tensor.hpp"
 #include <armadillo>
 #include <memory>
 

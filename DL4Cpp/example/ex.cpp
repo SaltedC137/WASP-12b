@@ -5,10 +5,10 @@
  * @date 2026-03-11 21:37:37
  */
 
-#include "check.hpp"
-#include "tensor.hpp"
-#include "tensor_linalg.hpp"
-#include "tensor_math.hpp"
+#include "utils/check.hpp"
+#include "core/tensor.hpp"
+#include "core/tensor_linalg.hpp"
+#include "core/tensor_math.hpp"
 #include <cmath>
 #include <iostream>
 #include <vector>

@@ -3,7 +3,7 @@
 #ifndef RUNTIME_OPERAND_HPP
 #define RUNTIME_OPERAND_HPP
 
-#include "tensor.hpp"
+#include "core/tensor.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <memory>
