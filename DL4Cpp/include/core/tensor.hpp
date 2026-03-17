@@ -397,8 +397,15 @@ private:
 };
 
 // Type aliases for convenience
+
+template <typename T = float> ///< Default to float
+using sten = std::shared_ptr<Tensor<T>>; ///< Shared pointer to tensor
+
 using ften = Tensor<float>;                 ///< Float tensor - shorthand alias
 using sft = std::shared_ptr<Tensor<float>>; ///< Shared pointer to float tensor
+
+using u1ten = Tensor<uint8_t>;                 ///< Uint8 tensor - shorthand alias
+using s1ft = std::shared_ptr<Tensor<uint8_t>>; ///< Shared pointer to uint8 tensor
 } // namespace ctl
 
 #endif
