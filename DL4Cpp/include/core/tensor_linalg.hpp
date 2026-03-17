@@ -13,7 +13,6 @@
 #ifndef TENSOR_LINALG_HPP
 #define TENSOR_LINALG_HPP
 
-
 #include <armadillo>
 #pragma once
 
@@ -139,12 +138,12 @@ inline float dot(const ften &tensor1, const ften &tensor2) {
 /**
  * @brief Compute the batch determinant of square matrices
  * @param tensor The input tensor (must be square matrices with multiple channels)
- * @return sft Shared pointer to a tensor containing determinant values for each channel
+ * @return sften Shared pointer to a tensor containing determinant values for each channel
  * @details Convenience wrapper for Batch_Determinant(). Creates an output tensor
  *          with shape (channels, 1, 1) and computes determinants for all channels.
  */
-inline sft det(const ften &tensor) {
-  sft output = std::make_shared<ften>(tensor.channels(), 1, 1);
+inline sften det(const ften &tensor) {
+  sften output = std::make_shared<ften>(tensor.channels(), 1, 1);
   Batch_Determinant(tensor, *output);
   return output;
 }
@@ -152,12 +151,12 @@ inline sft det(const ften &tensor) {
 /**
  * @brief Compute the batch trace of square matrices
  * @param tensor The input tensor (must be square matrices with multiple channels)
- * @return sft Shared pointer to a tensor containing trace values for each channel
+ * @return sften Shared pointer to a tensor containing trace values for each channel
  * @details Convenience wrapper for Batch_Trace(). Creates an output tensor
  *          with shape (channels, 1, 1) and computes traces for all channels.
  */
-inline sft trace(const ften &tensor) {
-  sft output = std::make_shared<ften>(tensor.channels(), 1, 1);
+inline sften trace(const ften &tensor) {
+  sften output = std::make_shared<ften>(tensor.channels(), 1, 1);
   Batch_Trace(tensor, *output);
   return output;
 }
@@ -166,12 +165,12 @@ inline sft trace(const ften &tensor) {
  * @brief Compute the outer product returning a new tensor
  * @param tensor1 The first input tensor
  * @param tensor2 The second input tensor
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes the outer product.
  *          Convenient for expression chaining without pre-allocating output.
  */
-inline sft outer(const ften &tensor1, const ften &tensor2) {
-  sft output = std::make_shared<ften>(1, tensor1.size(), tensor2.size());
+inline sften outer(const ften &tensor1, const ften &tensor2) {
+  sften output = std::make_shared<ften>(1, tensor1.size(), tensor2.size());
   Outer_product(tensor1, tensor2, *output);
   return output;
 }
@@ -179,12 +178,12 @@ inline sft outer(const ften &tensor1, const ften &tensor2) {
 /**
  * @brief Compute the batch transpose of matrices
  * @param tensor The input tensor
- * @return sft Shared pointer to the result tensor containing transposed matrices for each channel
+ * @return sften Shared pointer to the result tensor containing transposed matrices for each channel
  * @details Convenience wrapper for Transposition(). Creates a new tensor with transposed dimensions
  *          (cols, rows, channels) and computes the transpose for all channels.
  */
-inline sft transpose(const ften &tensor) {
-  sft output =
+inline sften transpose(const ften &tensor) {
+  sften output =
       std::make_shared<ften>(tensor.channels(), tensor.cols(), tensor.rows());
   Transposition(tensor, *output);
   return output;
@@ -193,13 +192,13 @@ inline sft transpose(const ften &tensor) {
 /**
  * @brief Compute the batch inverse of square matrices
  * @param tensor The input tensor (must be invertible square matrices with multiple channels)
- * @return sft Shared pointer to the result tensor containing inverse matrices for each channel
+ * @return sften Shared pointer to the result tensor containing inverse matrices for each channel
  * @details Convenience wrapper for Batch_Inverse(). Creates a new tensor with the same shape
  *          as the input and computes the matrix inverse for all channels.
  *          @warning The input tensor must be non-singular square matrices.
  */
-inline sft inv(const ften &tensor) {
-  sft output = std::make_shared<ften>(tensor.shapes());
+inline sften inv(const ften &tensor) {
+  sften output = std::make_shared<ften>(tensor.shapes());
   Batch_Inverse(tensor, *output);
   return output;
 }

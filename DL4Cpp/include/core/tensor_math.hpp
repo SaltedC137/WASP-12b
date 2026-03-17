@@ -12,11 +12,9 @@
 #ifndef TENSOR_MATH_HPP
 #define TENSOR_MATH_HPP
 
-
 #include "core/tensor.hpp"
 #include <armadillo>
 #include <memory>
-
 
 namespace ctl::math {
 
@@ -142,12 +140,12 @@ void ElementClip(const ften &tensor, float min_val, float max_val,
  * @brief Element-wise addition returning a new tensor
  * @param tensor1 The first input tensor
  * @param tensor2 The second input tensor
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes tensor1 + tensor2.
  *          Convenient for expression chaining without pre-allocating output.
  */
-inline sft add(const ften &tensor1, const ften &tensor2) {
-  sft output = std::make_shared<ften>(tensor1.shapes());
+inline sften add(const ften &tensor1, const ften &tensor2) {
+  sften output = std::make_shared<ften>(tensor1.shapes());
   ElementAdd(tensor1, tensor2, *output);
   return output;
 }
@@ -156,11 +154,11 @@ inline sft add(const ften &tensor1, const ften &tensor2) {
  * @brief Element-wise subtraction returning a new tensor
  * @param tensor1 The minuend tensor
  * @param tensor2 The subtrahend tensor
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes tensor1 - tensor2.
  */
-inline sft sub(const ften &tensor1, const ften &tensor2) {
-  sft output = std::make_shared<ften>(tensor1.shapes());
+inline sften sub(const ften &tensor1, const ften &tensor2) {
+  sften output = std::make_shared<ften>(tensor1.shapes());
   ElementSub(tensor1, tensor2, *output);
   return output;
 }
@@ -169,11 +167,11 @@ inline sft sub(const ften &tensor1, const ften &tensor2) {
  * @brief Element-wise multiplication returning a new tensor
  * @param tensor1 The first input tensor
  * @param tensor2 The second input tensor
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes tensor1 * tensor2 (Hadamard).
  */
-inline sft mul(const ften &tensor1, const ften &tensor2) {
-  sft output = std::make_shared<ften>(tensor1.shapes());
+inline sften mul(const ften &tensor1, const ften &tensor2) {
+  sften output = std::make_shared<ften>(tensor1.shapes());
   ElementMultiply(tensor1, tensor2, *output);
   return output;
 }
@@ -182,11 +180,11 @@ inline sft mul(const ften &tensor1, const ften &tensor2) {
  * @brief Element-wise division returning a new tensor
  * @param tensor1 The numerator tensor
  * @param tensor2 The denominator tensor
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes tensor1 / tensor2.
  */
-inline sft div(const ften &tensor1, const ften &tensor2) {
-  sft output = std::make_shared<ften>(tensor1.shapes());
+inline sften div(const ften &tensor1, const ften &tensor2) {
+  sften output = std::make_shared<ften>(tensor1.shapes());
   ElementDivide(tensor1, tensor2, *output);
   return output;
 }
@@ -195,11 +193,12 @@ inline sft div(const ften &tensor1, const ften &tensor2) {
  * @brief Matrix multiplication returning a new tensor
  * @param tensor1 The left operand tensor
  * @param tensor2 The right operand tensor
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes tensor1 · tensor2.
  */
-inline sft matmul(const ften &tensor1, const ften &tensor2) {
-  sft output = std::make_shared<ften>(tensor1.channels(),tensor1.rows(),tensor2.cols());
+inline sften matmul(const ften &tensor1, const ften &tensor2) {
+  sften output = std::make_shared<ften>(tensor1.channels(), tensor1.rows(),
+                                        tensor2.cols());
   Matmul(tensor1, tensor2, *output);
   return output;
 }
@@ -208,11 +207,11 @@ inline sft matmul(const ften &tensor1, const ften &tensor2) {
  * @brief Add scalar to tensor returning a new tensor
  * @param tensor The input tensor
  * @param scalar The scalar value to add
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes tensor + scalar.
  */
-inline sft add(const ften &tensor, float scalar) {
-  sft output = std::make_shared<ften>(tensor.shapes());
+inline sften add(const ften &tensor, float scalar) {
+  sften output = std::make_shared<ften>(tensor.shapes());
   AddScalar(tensor, scalar, *output);
   return output;
 }
@@ -221,11 +220,11 @@ inline sft add(const ften &tensor, float scalar) {
  * @brief Multiply tensor by scalar returning a new tensor
  * @param tensor The input tensor
  * @param scalar The scalar multiplier
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes tensor * scalar.
  */
-inline sft mul(const ften &tensor, float scalar) {
-  sft output = std::make_shared<ften>(tensor.shapes());
+inline sften mul(const ften &tensor, float scalar) {
+  sften output = std::make_shared<ften>(tensor.shapes());
   MultiplyScalar(tensor, scalar, *output);
   return output;
 }
@@ -234,11 +233,11 @@ inline sft mul(const ften &tensor, float scalar) {
  * @brief Subtract scalar from tensor returning a new tensor
  * @param tensor The input tensor
  * @param scalar The scalar value to subtract
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes tensor - scalar.
  */
-inline sft sub(const ften &tensor, float scalar) {
-  sft output = std::make_shared<ften>(tensor.shapes());
+inline sften sub(const ften &tensor, float scalar) {
+  sften output = std::make_shared<ften>(tensor.shapes());
   SubScalar(tensor, scalar, *output);
   return output;
 }
@@ -247,11 +246,11 @@ inline sft sub(const ften &tensor, float scalar) {
  * @brief Divide tensor by scalar returning a new tensor
  * @param tensor The input tensor
  * @param scalar The scalar divisor
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes tensor / scalar.
  */
-inline sft div(const ften &tensor, float scalar) {
-  sft output = std::make_shared<ften>(tensor.shapes());
+inline sften div(const ften &tensor, float scalar) {
+  sften output = std::make_shared<ften>(tensor.shapes());
   DivideScalar(tensor, scalar, *output);
   return output;
 }
@@ -259,11 +258,11 @@ inline sft div(const ften &tensor, float scalar) {
 /**
  * @brief Apply exponential to tensor returning a new tensor
  * @param tensor The input tensor
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor and computes exp(tensor) element-wise.
  */
-inline sft exp(const ften &tensor) {
-  sft output = std::make_shared<ften>(tensor.shapes());
+inline sften exp(const ften &tensor) {
+  sften output = std::make_shared<ften>(tensor.shapes());
   ElementExp(tensor, *output);
   return output;
 }
@@ -273,11 +272,11 @@ inline sft exp(const ften &tensor) {
  * @param tensor The input tensor
  * @param min_val The minimum value (lower bound)
  * @param max_val The maximum value (upper bound)
- * @return sft Shared pointer to the result tensor
+ * @return sften Shared pointer to the result tensor
  * @details Creates a new tensor with values clipped to [min_val, max_val].
  */
-inline sft clip(const ften &tensor, float min_val, float max_val) {
-  sft output = std::make_shared<ften>(tensor.shapes());
+inline sften clip(const ften &tensor, float min_val, float max_val) {
+  sften output = std::make_shared<ften>(tensor.shapes());
   ElementClip(tensor, min_val, max_val, *output);
   return output;
 }
