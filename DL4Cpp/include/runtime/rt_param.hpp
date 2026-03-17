@@ -4,7 +4,6 @@
 #define RUNTIME_PARAMETER_HPP
 
 #include "runtime/rt_type.hpp"
-#include <algorithm>
 #include <cstdint>
 #include <string>
 #include <vector>
