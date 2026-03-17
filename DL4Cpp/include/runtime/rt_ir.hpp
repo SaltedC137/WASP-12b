@@ -4,6 +4,7 @@
 #define RUNTIME_IR_HPP
 
 #include "tensor.hpp"
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,9 +15,10 @@ class RuntimeGraph {
 public:
   RuntimeGraph(std::string param_path, std::string bin_path);
 
-  void set_input();
 
-  std::vector<ften> get_output();
+  std::vector<ften> get_output(const std::string& output_name , const std::shared_ptr<sften> input_tensors);
+
+  
 
 
 
