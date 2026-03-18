@@ -96,6 +96,15 @@ public:
    */
   explicit Tensor(const std::vector<uint32_t> &shapes);
 
+/**
+   * @brief Construct a tensor wrapping existing external memory (Zero-Copy)
+   * @param data Pointer to the existing float array
+   * @param shapes The shape of the tensor
+   * @details Does not take ownership of the memory. The caller must ensure 
+   * the pointer remains valid for the lifetime of this tensor.
+   */
+  explicit Tensor(float *data, const std::vector<uint32_t> &shapes);
+
   /**
    * @brief Copy constructor - performs deep copy of tensor data
    * @param tensor The source tensor to copy from

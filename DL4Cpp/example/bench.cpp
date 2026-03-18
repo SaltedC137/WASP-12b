@@ -18,8 +18,6 @@
 #include <cmath>
 
 using namespace ctl;
-using namespace ctl::math;
-using namespace ctl::linalg;
 
 // ===== Simple Tensor Operations Benchmarks =====
 

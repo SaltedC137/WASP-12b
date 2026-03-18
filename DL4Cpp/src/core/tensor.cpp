@@ -90,6 +90,31 @@ Tensor<float> &Tensor<float>::operator=(Tensor<float> &&tensor) noexcept {
   return *this;
 }
 
+// Construct tensor wrapping external memory
+Tensor<float>::Tensor(float *data, const std::vector<uint32_t> &shapes) {
+  CHECK(data != nullptr) << "External data pointer cannot be null";
+  CHECK(!shapes.empty() && shapes.size() <= 3)
+      << "Shape vector cannot be empty";
+
+  const uint32_t remaining = 3 - shapes.size();
+  std::vector<uint32_t> shapes_(3, 1);
+  std::copy(shapes.begin(), shapes.end(), shapes_.begin() + remaining);
+
+  const uint32_t channels = shapes_.at(0);
+  const uint32_t rows = shapes_.at(1);
+  const uint32_t cols = shapes_.at(2);
+
+  this->data_ = arma::fcube(data, rows, cols, channels, false, false);
+
+  if (channels == 1 && rows == 1) {
+    this->raw_shape_ = std::vector<uint32_t>{cols};
+  } else if (channels == 1) {
+    this->raw_shape_ = std::vector<uint32_t>{rows, cols};
+  } else {
+    this->raw_shape_ = std::vector<uint32_t>{channels, rows, cols};
+  }
+}
+
 // Copy assignment operator
 Tensor<float> &Tensor<float>::operator=(const Tensor &tensor) {
   if (this != &tensor) {

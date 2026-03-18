@@ -14,8 +14,7 @@
 #include <vector>
 
 using namespace ctl;
-using namespace ctl::math;
-using namespace ctl::linalg;
+
 
 // Helper function to compare floats with tolerance
 bool FloatEq(float a, float b, float eps = 1e-5f) {

@@ -13,6 +13,7 @@ set(DL4CPP_SOURCES
     src/utils/log.cpp
     src/pnnx/ir.cpp
     src/pnnx/store_zip.cpp
+    src/runtime/rt_op.cpp
 
     # src/nn/layer.cpp #TODO
 )
@@ -76,8 +77,12 @@ if(DL4CPP_BUILD_TESTS)
 
     add_executable(dl4cpp_test example/ex.cpp)
     target_link_libraries(dl4cpp_test PRIVATE DL4Cpp)
-
     add_test(NAME TensorExample COMMAND dl4cpp_test)
+
+    # Runtime operator tests
+    add_executable(dl4cpp_rt_op_test example/rt_op_test.cpp)
+    target_link_libraries(dl4cpp_rt_op_test PRIVATE DL4Cpp)
+    add_test(NAME RtOpTest COMMAND dl4cpp_rt_op_test)
 endif()
 
 # Benchmarks

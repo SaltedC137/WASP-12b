@@ -18,7 +18,7 @@
 
 #include "core/tensor.hpp"
 
-namespace ctl::linalg {
+namespace ctl {
 
 /**
  * @brief Compute the Euclidean norm (L2 norm) of a tensor

@@ -16,7 +16,7 @@
 #include <armadillo>
 #include <memory>
 
-namespace ctl::math {
+namespace ctl {
 
 /**
  * @brief Element-wise addition of two tensors
