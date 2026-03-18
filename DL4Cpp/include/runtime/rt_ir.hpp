@@ -28,11 +28,11 @@ namespace ctl {
 
 /**
  * @brief Runtime computation graph manager
- * @details Manages the lifecycle of a computation graph from loading to execution.
- * The graph is built from PNNX intermediate representation, with support for
- * topological sorting, operator initialization, and forward propagation. Maintains
- * references to input/output operators and all intermediate operators for efficient
- * traversal during inference.
+ * @details Manages the lifecycle of a computation graph from loading to
+ * execution. The graph is built from PNNX intermediate representation, with
+ * support for topological sorting, operator initialization, and forward
+ * propagation. Maintains references to input/output operators and all
+ * intermediate operators for efficient traversal during inference.
  */
 class RuntimeGraph {
 
@@ -98,7 +98,7 @@ public:
    * @details Updates the parameter file path. Should be called before Build().
    * Changing this after Build() requires re-initialization.
    */
-  void param_path(const std::string &param_path);
+  void set_param_path(const std::string &param_path);
 
   /**
    * @brief Set the binary weights file path
@@ -106,7 +106,7 @@ public:
    * @details Updates the binary file path. Should be called before Build().
    * Changing this after Build() requires re-initialization.
    */
-  void bin_path(const std::string &bin_path);
+  void set_bin_path(const std::string &bin_path);
 
   /**
    * @brief Get the parameter file path
@@ -174,27 +174,27 @@ private:
   /**
    * @brief Initialize input operands for graph operators
    * @tparam T Data type for operator execution
-   * @param input Vector of PNNX input operators
+   * @param input Vector of PNNX input operands
    * @param runtime_op Corresponding runtime operator to initialize
    * @details Sets up the input operand structure for runtime operators based
    * on PNNX graph input definitions.
    */
   template <typename T>
   static void InitGraphOperatorsInput(
-      const std::vector<pnnx::Operator *> &input,
+      const std::vector<pnnx::Operand *> &input,
       const std::shared_ptr<RuntimeOperatorBase<T>> &runtime_op);
 
   /**
    * @brief Initialize output operands for graph operators
    * @tparam T Data type for operator execution
-   * @param output Vector of PNNX output operators
+   * @param output Vector of PNNX output operands
    * @param runtime_op Corresponding runtime operator to initialize
    * @details Sets up the output operand structure for runtime operators based
    * on PNNX graph output definitions.
    */
   template <typename T>
   static void InitGraphOperatorsOutput(
-      const std::vector<pnnx::Operator *> &output,
+      const std::vector<pnnx::Operand *> &output,
       const std::shared_ptr<RuntimeOperatorBase<T>> &runtime_op);
 
   /**
@@ -260,22 +260,27 @@ private:
    * or partially built graphs.
    */
   enum class GraphStatus {
-    NeedInit = -2,   ///< Graph needs initialization (files not loaded)
-    NeedBuild = -1,  ///< Graph initialized but not yet built
-    Complete = 0,    ///< Graph fully built and ready for execution
+    NeedInit = -2,  ///< Graph needs initialization (files not loaded)
+    NeedBuild = -1, ///< Graph initialized but not yet built
+    Complete = 0,   ///< Graph fully built and ready for execution
   };
 
+public:
+  GraphStatus graph_status() const;
+
+
 private:
-  std::string bin_path_;      ///< Path to binary weights file
-  std::string param_path_;    ///< Path to PNNX parameter file
+  std::string bin_path_;   ///< Path to binary weights file
+  std::string param_path_; ///< Path to PNNX parameter file
 
-  std::unique_ptr<pnnx::Graph> graph_;  ///< PNNX graph structure
+  std::unique_ptr<pnnx::Graph> graph_; ///< PNNX graph structure
 
-  GraphStatus graphstatus_ = GraphStatus::NeedInit;  ///< Current graph status
+  GraphStatus graphstatus_ = GraphStatus::NeedInit; ///< Current graph status
 
-  std::vector<std::shared_ptr<RuntimeOperator>> input_ops_;   ///< Input operators
-  std::vector<std::shared_ptr<RuntimeOperator>> output_ops_;  ///< Output operators
-  std::vector<std::shared_ptr<RuntimeOperator>> operators_;   ///< All operators
+  std::vector<std::shared_ptr<RuntimeOperator>> input_ops_; ///< Input operators
+  std::vector<std::shared_ptr<RuntimeOperator>>
+      output_ops_; ///< Output operators
+  std::vector<std::shared_ptr<RuntimeOperator>> operators_; ///< All operators
 };
 
 } // namespace ctl
