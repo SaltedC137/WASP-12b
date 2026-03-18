@@ -139,4 +139,14 @@
               << "Check failed: " #val1 " >= " #val2 " (" << (val1) << " vs "  \
               << (val2) << ") "
 
+
+
+#define CHECK_GT(val1, val2)                                                   \
+  LIKELY((val1) > (val2))                                                      \
+  ? (void)0                                                                    \
+  : ctl::FMessageVoidify() &                                                   \
+          ctl::LogMessage(ctl::LogLevel::FATAL, __FILE__, __LINE__).stream()   \
+              << "Check failed: " #val1 " > " #val2 " (" << (val1) << " vs "   \
+              << (val2) << ") "
+
 #endif // CHECK_HPP_

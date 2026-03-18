@@ -9,7 +9,7 @@
 #include <armadillo>
 #include <cstdint>
 
-namespace ctl::linalg {
+namespace ctl {
 
 float Euclidean_norm(const ften &tensor) {
   CHECK(!tensor.empty()) << "Cannot compute norm of an empty tensor!";

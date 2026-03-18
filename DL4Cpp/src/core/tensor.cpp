@@ -334,31 +334,30 @@ void Tensor<float>::Show() {
 void Tensor<float>::Reshape(const std::vector<uint32_t> &shapes,
                             bool row_major) {
   CHECK(!this->data_.empty());
-  CHECK(!shapes.empty());
+  CHECK(!shapes.empty() && shapes.size() <= 3);
+
   const uint32_t origin_size = this->size();
   const uint32_t current_size =
       std::accumulate(shapes.begin(), shapes.end(), 1, std::multiplies());
-  CHECK(shapes.size() <= 3);
-  CHECK(current_size == origin_size);
+  CHECK_EQ(current_size, origin_size) << "Reshape must preserve total size!";
 
-  std::vector<float> values;
-  if (row_major) {
-    values = this->values(true);
-  }
+  std::vector<uint32_t> shapes_(3, 1);
+  std::copy(shapes.begin(), shapes.end(),
+            shapes_.begin() + (3 - shapes.size()));
+
+  const uint32_t channels = shapes_.at(0);
+  const uint32_t rows = shapes_.at(1);
+  const uint32_t cols = shapes_.at(2);
+
+  this->data_ =
+      arma::fcube(this->raw_ptr(), rows, cols, channels, false, false);
 
   if (shapes.size() == 3) {
-    this->data_.reshape(shapes.at(1), shapes.at(2), shapes.at(0));
-    this->raw_shape_ = {shapes.at(0), shapes.at(1), shapes.at(2)};
+    this->raw_shape_ = {channels, rows, cols};
   } else if (shapes.size() == 2) {
-    this->data_.reshape(shapes.at(0), shapes.at(1), 1);
-    this->raw_shape_ = {shapes.at(0), shapes.at(1)};
+    this->raw_shape_ = {rows, cols};
   } else {
-    this->data_.reshape(1, shapes.at(0), 1);
     this->raw_shape_ = {shapes.at(0)};
-  }
-
-  if (row_major) {
-    this->Fill(values, true);
   }
 }
 
