@@ -15,15 +15,16 @@
 #ifndef RUNTIME_OPERATOR_HPP
 #define RUNTIME_OPERATOR_HPP
 
+#include "pnnx/ir.h"
 #include "runtime/rt_attr.hpp"
 #include "runtime/rt_opd.hpp"
 #include "runtime/rt_param.hpp"
-#include "pnnx/ir.h"
 #include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
 
 namespace ctl {
 
@@ -35,12 +36,12 @@ template <typename T> class Layer;
  * @details Represents a node in the runtime computation graph. Each operator
  * contains execution timing information (for topological ordering), layer
  * pointer for actual computation, input/output operand mappings, and parameter/
- * attribute storage. The design separates graph structure (operands, connections)
- * from execution logic (Layer objects).
+ * attribute storage. The design separates graph structure (operands,
+ * connections) from execution logic (Layer objects).
  */
-template <typename T>
-struct RuntimeOperatorBase {
-  /// Execution order index (determined by topological sort, -1 if not scheduled)
+template <typename T> struct RuntimeOperatorBase {
+  /// Execution order index (determined by topological sort, -1 if not
+  /// scheduled)
   int32_t start_time = -1;
 
   /// End time marker for scheduling (used in dependency tracking)
@@ -65,16 +66,18 @@ struct RuntimeOperatorBase {
   std::vector<std::string> output_names;
 
   /// Output operand carrying data to downstream operators
-  std::shared_ptr<RTOperandBase<T>> output_operand;
+  std::shared_ptr<RuntimeOperandBase<T>> output_operand;
 
   /// Map of output operators by name (graph edges to successors)
-  std::map<std::string, std::shared_ptr<RuntimeOperatorBase<T>>> output_operators;
+  std::map<std::string, std::shared_ptr<RuntimeOperatorBase<T>>>
+      output_operators;
 
   /// Map of input operands by producer name (graph edges from predecessors)
-  std::map<std::string, std::shared_ptr<RTOperandBase<T>>> input_operands;
+  std::map<std::string, std::shared_ptr<RuntimeOperandBase<T>>> input_operands;
 
-  /// Sequential list of input operands (preserves input order for multi-input ops)
-  std::vector<std::shared_ptr<RTOperandBase<T>>> input_operands_seq;
+  /// Sequential list of input operands (preserves input order for multi-input
+  /// ops)
+  std::vector<std::shared_ptr<RuntimeOperandBase<T>>> input_operands_seq;
 
   /// Operator parameters (hyperparameters like stride, padding, kernel_size)
   std::map<std::string, std::shared_ptr<RuntimeParameter>> param;
@@ -89,7 +92,7 @@ struct RuntimeOperatorBase {
    * @details Performs a lookup in the attribute map. Used during layer
    * initialization to verify required weights are present.
    */
-  bool has_attribute(const std::string& attr_name);
+  bool has_attribute(const std::string &attr_name);
 
   /**
    * @brief Check if operator has a specific parameter
@@ -98,7 +101,7 @@ struct RuntimeOperatorBase {
    * @details Performs a lookup in the parameter map. Used during layer
    * initialization to verify required hyperparameters are present.
    */
-  bool has_parameter(const std::string& param_name);
+  bool has_parameter(const std::string &param_name);
 };
 
 /**
@@ -107,9 +110,9 @@ struct RuntimeOperatorBase {
  * @param attr_name Attribute name to search for
  * @return true if found, false otherwise
  */
-template<typename T>
-bool RuntimeOperatorBase<T>::has_attribute(const std::string& attr_name) {
-  return attribute.find(attr_name)!= attribute.end();
+template <typename T>
+bool RuntimeOperatorBase<T>::has_attribute(const std::string &attr_name) {
+  return attribute.find(attr_name) != attribute.end();
 }
 
 /**
@@ -118,9 +121,9 @@ bool RuntimeOperatorBase<T>::has_attribute(const std::string& attr_name) {
  * @param param_name Parameter name to search for
  * @return true if found, false otherwise
  */
-template<typename T>
-bool RuntimeOperatorBase<T>::has_parameter(const std::string& param_name) {
-  return param.find(param_name)!= param.end();
+template <typename T>
+bool RuntimeOperatorBase<T>::has_parameter(const std::string &param_name) {
+  return param.find(param_name) != param.end();
 }
 
 /// Float operator type alias (standard precision runtime)
@@ -135,17 +138,15 @@ using RuntimeOperatorQuantized = RuntimeOperatorBase<int8_t>;
  * @details Provides static methods for initializing operator input/output
  * tensor spaces before graph execution. Specialized for different data types.
  */
-template<typename T>
-class RuntimeOperatorUtils;
+template <typename T> class RuntimeOperatorUtils;
 
 /**
  * @brief Float specialization of operator utilities
  * @details Handles initialization of input and output tensor spaces for
  * float-precision operators. Manages memory allocation and shape validation.
  */
-template<>
-class RuntimeOperatorUtils<float>{
-  public:
+template <> class RuntimeOperatorUtils<float> {
+public:
   /**
    * @brief Initialize input tensor spaces for all operators
    * @param operators Vector of operators to initialize
@@ -153,7 +154,8 @@ class RuntimeOperatorUtils<float>{
    * On first run, creates tensors with proper dimensions. On subsequent
    * runs, validates that input shapes match expected dimensions.
    */
-  static void InitOperatorInput(const std::vector<std::shared_ptr<RuntimeOperator>>& operators);
+  static void InitOperatorInput(
+      const std::vector<std::shared_ptr<RuntimeOperator>> &operators);
 
   /**
    * @brief Initialize output tensor spaces for all operators
@@ -162,7 +164,9 @@ class RuntimeOperatorUtils<float>{
    * @details Allocates output tensor memory based on PNNX graph shape info.
    * Ensures output tensors are properly sized before Forward execution.
    */
-  static void InitOperatorOutput(const std::vector<pnnx::Operator*>& pnnx_operators, const std::vector<std::shared_ptr<RuntimeOperator>> & operators);
+  static void InitOperatorOutput(
+      const std::vector<pnnx::Operator *> &pnnx_operators,
+      const std::vector<std::shared_ptr<RuntimeOperator>> &operators);
 };
 
 } // namespace ctl

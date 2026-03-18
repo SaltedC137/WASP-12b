@@ -169,7 +169,7 @@ private:
    * Links input/output operands between connected operators to enable data
    * flow during forward propagation.
    */
-  void CreatNodeRelation();
+  void CreateNodeRelation();
 
   /**
    * @brief Initialize input operands for graph operators
@@ -180,7 +180,7 @@ private:
    * on PNNX graph input definitions.
    */
   template <typename T>
-  static void InitGraphyOperatorsInput(
+  static void InitGraphOperatorsInput(
       const std::vector<pnnx::Operator *> &input,
       const std::shared_ptr<RuntimeOperatorBase<T>> &runtime_op);
 
@@ -193,7 +193,7 @@ private:
    * on PNNX graph output definitions.
    */
   template <typename T>
-  static void InitGraphyOperatorsOutput(
+  static void InitGraphOperatorsOutput(
       const std::vector<pnnx::Operator *> &output,
       const std::shared_ptr<RuntimeOperatorBase<T>> &runtime_op);
 
