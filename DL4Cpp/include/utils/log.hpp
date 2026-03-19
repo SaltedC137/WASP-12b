@@ -128,9 +128,8 @@ public:
  * @endcode
  */
 
- 
 #define LOG_IF(level, condition)                                               \
-  (condition) ? (void)0                                                        \
+  (!(condition)) ? (void)0                                                     \
   : (ctl::LogLevel::level < ctl::SystemLogLevel)                               \
       ? (void)0                                                                \
       : ctl::FMessageVoidify() &                                               \

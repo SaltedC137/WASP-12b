@@ -210,8 +210,6 @@ void RuntimeGraph::InitGraphAttribute(
   }
 }
 
-
-
 void RuntimeGraph::Build() {
   if (graphstatus_ == GraphStatus::Complete) {
     LOG(INFO) << "The graph has already been built";
@@ -244,5 +242,18 @@ void RuntimeGraph::Build() {
     graph_ = nullptr;
   }
 }
+
+template <typename T>
+StatusCode ExcuteLayer(const std::shared_ptr<Layer<T>> &layer,
+                       const std::string &op_name, const std::string &op_type,
+                       bool is_debug) {
+  CHECK(layer != nullptr) << "The layer is null";
+  StatusCode status;
+  if (is_debug) {
+    
+  }
+}
+
+
 
 } // namespace ctl
