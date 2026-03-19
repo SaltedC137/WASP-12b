@@ -212,5 +212,37 @@ void RuntimeGraph::InitGraphAttribute(
 
 
 
+void RuntimeGraph::Build() {
+  if (graphstatus_ == GraphStatus::Complete) {
+    LOG(INFO) << "The graph has already been built";
+    return;
+  }
+
+  if (graphstatus_ == GraphStatus::NeedInit) {
+    bool init_graph = Init();
+    LOG_IF(FATAL, !init_graph || graphstatus_ == GraphStatus::NeedInit)
+        << "Failed to initialize the graph";
+  }
+
+  CHECK(graphstatus_ >= GraphStatus::NeedBuild)
+      << "Graph status is not valid" << int32_t(graphstatus_);
+
+  LOG_IF(FATAL, this->operators_.empty()) << "The operator list is empty";
+
+  // TODO: build the graph
+  CreateNodeRelation();
+
+  // TODO: sort the graph
+  ReverseToSort();
+
+  RuntimeOperatorUtils<float>::InitOperatorInput(operators_);
+  RuntimeOperatorUtils<float>::InitOperatorOutput(graph_->ops,operators_);
+
+  graphstatus_ = GraphStatus::Complete;
+  if(graph_ != nullptr){
+    graph_.reset();
+    graph_ = nullptr;
+  }
+}
 
 } // namespace ctl

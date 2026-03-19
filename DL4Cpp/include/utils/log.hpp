@@ -113,6 +113,28 @@ public:
       : ctl::FMessageVoidify() &                                               \
             ctl::LogMessage(ctl::LogLevel::level, __FILE__, __LINE__).stream()
 
+/**
+ * @brief Conditional logging macro with severity-based filtering
+ * @param level The log level (DEBUG, INFO, WARNING, ERROR, FATAL)
+ * @param condition The boolean condition to check
+ * @return A stream reference for writing the log message, or void if filtered
+ * @details If the specified level is below the current SystemLogLevel,
+ *          the macro evaluates to (void)0 and no logging occurs.
+ *          Otherwise, it creates a LogMessage object and returns its stream.
+ *
+ * Usage example:
+ * @code
+ * LOG_IF(INFO, x > 0) << "Value is positive";
+ * @endcode
+ */
+
+ 
+#define LOG_IF(level, condition)                                               \
+  (condition) ? (void)0                                                        \
+  : (ctl::LogLevel::level < ctl::SystemLogLevel)                               \
+      ? (void)0                                                                \
+      : ctl::FMessageVoidify() &                                               \
+            ctl::LogMessage(ctl::LogLevel::level, __FILE__, __LINE__).stream()
 } // namespace ctl
 
 #endif // LOG_HPP_
