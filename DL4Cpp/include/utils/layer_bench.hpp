@@ -87,6 +87,18 @@ public:
     static std::mutex map_mutex;
     return map_mutex;
   }
+
+  /**
+   * @brief Clear all collected layer statistics
+   * @details Removes all entries from the global collector map.
+   *          Thread-safe access to the collector map.
+   */
+  static void ClearTimeStats() {
+    auto &map_mutex = GetMapMutex();
+    auto &collector = SingletonInstance();
+    std::lock_guard<std::mutex> lock(map_mutex);
+    collector.clear();
+  }
 };
 
 /**
@@ -136,8 +148,8 @@ public:
   static void SummaryLogging();
 
 private:
-  std::string layer_name_;                         ///< Name of the timed layer
-  std::string layer_type_;                         ///< Type of the timed layer
+  std::string layer_name_; ///< Name of the timed layer
+  std::string layer_type_; ///< Type of the timed layer
   std::chrono::steady_clock::time_point start_time_; ///< Timing start point
 };
 

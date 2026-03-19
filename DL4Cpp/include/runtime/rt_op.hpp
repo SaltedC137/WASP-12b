@@ -51,7 +51,7 @@ template <typename T> struct RuntimeOperatorBase {
   int32_t occur_end_time = -1;
 
   /// Forward-only flag indicating single-pass execution constraint
-  bool forward_only = false;
+  bool has_forward = false;
 
   /// Unique operator identifier name within the graph
   std::string name;

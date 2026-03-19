@@ -4,11 +4,13 @@
 #include "check.hpp"
 #include "runtime/rt_attr.hpp"
 #include "runtime/rt_op.hpp"
+#include "utils/layer_bench.hpp"
 
 #include "ir.h"
 #include "log.hpp"
 #include "runtime/rt_param.hpp"
 #include "runtime/rt_type.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -234,10 +236,10 @@ void RuntimeGraph::Build() {
   ReverseToSort();
 
   RuntimeOperatorUtils<float>::InitOperatorInput(operators_);
-  RuntimeOperatorUtils<float>::InitOperatorOutput(graph_->ops,operators_);
+  RuntimeOperatorUtils<float>::InitOperatorOutput(graph_->ops, operators_);
 
   graphstatus_ = GraphStatus::Complete;
-  if(graph_ != nullptr){
+  if (graph_ != nullptr) {
     graph_.reset();
     graph_ = nullptr;
   }
@@ -250,10 +252,54 @@ StatusCode ExcuteLayer(const std::shared_ptr<Layer<T>> &layer,
   CHECK(layer != nullptr) << "The layer is null";
   StatusCode status;
   if (is_debug) {
-    
+    bench::LayerTimeLogging layer_time_logging(op_name, op_type);
+    status = layer->Forward(); ///?????????
+  } else {
+    status = layer->Forward(); ///?????????
   }
+  return status;
 }
 
+void RuntimeGraph::Forward(bool debug) {
+  if (graphstatus_ == GraphStatus::Complete) {
+    LOG(FATAL) << "Graph need be build!" << ", current state is "
+               << int32_t(graphstatus_);
+  }
 
+  if (debug) {
+    bench::LayerTimeStatsSingleton::ClearTimeStats();
+  }
 
+  for (const auto &current_op : operators_) {
+    current_op->has_forward = false;
+    CHECK_GT(current_op->start_time, 0);
+
+    if (is_input_op(current_op->name) || is_output_op(current_op->name)) {
+      current_op->has_forward = true;
+      continue;
+    }
+
+    CHECK(current_op->layer != nullptr)
+        << "The layer corresponding to the op " << current_op->name
+        << " is empty, indicating that it may not have been created.";
+
+    StatusCode status = ExcuteLayer(current_op->layer, current_op->name,
+                                    current_op->type, debug);
+
+    CHECK(status == StatusCode::Success)
+        << current_op->layer-> // ??????????
+        << " layer forward failed, error code: " << int32_t(status);
+
+    current_op->has_forward = true;
+    PropLayerOutputs(current_op, current_op->output_operand->datas);
+    if (debug) {
+      bench::LayerTimeLogging::SummaryLogging();
+    }
+
+    for (const auto &op : operators_) {
+      LOG_IF(FATAL, !op->has_forward)
+          << "The operator: " << op->name << " has not been forward yet!";
+    }
+  }
+}
 } // namespace ctl
