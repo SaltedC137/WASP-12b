@@ -40,6 +40,7 @@ This project is currently **under active development**. Core tensor operations a
 - Robust logging system with configurable levels
 - CHECK macros for runtime assertions
 - Centralized thread configuration with RAII guards
+- Micro-benchmark framework (ubench)
 
 ---
 
@@ -53,8 +54,10 @@ WASP-12b/
 │   │   │   ├── tensor.hpp          # Tensor class definition
 │   │   │   ├── tensor_math.hpp     # Element-wise operations
 │   │   │   └── tensor_linalg.hpp   # Linear algebra operations
-│   │   ├── nn/
+│   │   ├── layer/
 │   │   │   └── layer.hpp           # Neural network layer abstraction
+│   │   ├── nn/
+│   │   │   └── layer.hpp           # Layer factory (legacy)
 │   │   ├── runtime/
 │   │   │   ├── rt_ir.hpp           # Runtime computation graph
 │   │   │   ├── rt_op.hpp           # Runtime operator definition
@@ -63,14 +66,19 @@ WASP-12b/
 │   │   │   ├── rt_param.hpp        # Runtime parameters (hyperparams)
 │   │   │   └── rt_type.hpp         # Type enumerations
 │   │   ├── pnnx/
-│   │   │   └── ir.h                # PNNX graph format
+│   │   │   ├── ir.h                # PNNX graph format
+│   │   │   └── store_zip.hpp       # Model storage compression
 │   │   ├── utils/
 │   │   │   ├── check.hpp           # CHECK assertion macros
 │   │   │   ├── log.hpp             # Logging utilities
-│   │   │   └── thread_config.hpp   # Thread management
+│   │   │   ├── thread_config.hpp   # Thread management
+│   │   │   ├── layer_bench.hpp     # Layer benchmarking
+│   │   │   └── ubench.h            # Micro-benchmark framework
+│   │   ├── data/                   # Data loading module (reserved)
 │   │   └── status_code.hpp         # Status code definitions
 │   ├── src/                        # Implementation files
 │   │   ├── core/
+│   │   ├── layer/
 │   │   ├── nn/
 │   │   ├── runtime/
 │   │   ├── pnnx/
@@ -300,6 +308,7 @@ cmake --build . --target docs
 - [x] Fill operations (`Fill`, `Ones`, `Rand`, `Zeros`)
 - [x] Transformation operations (`Transform`)
 - [x] Raw pointer access for interoperability
+- [x] External memory wrapping (zero-copy construction)
 
 ### ✅ Mathematical Operations
 - [x] Element-wise arithmetic (Add, Sub, Mul, Div)
@@ -331,6 +340,12 @@ cmake --build . --target docs
 - [x] Logging system (INFO, DEBUG, WARNING, ERROR, FATAL)
 - [x] OpenMP parallelization
 - [x] Thread configuration with RAII guards
+- [x] Micro-benchmark framework (ubench)
+
+### ✅ PNNX Support
+- [x] PNNX IR format parsing
+- [x] Parameter/Attribute type system
+- [x] Compressed storage (store_zip)
 
 ---
 
@@ -394,4 +409,4 @@ copies of the Software.
 
 ---
 
-*Last updated: 2026-03-17*
+*Last updated: 2026-03-20*
