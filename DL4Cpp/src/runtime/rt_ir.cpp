@@ -288,7 +288,7 @@ void RuntimeGraph::Forward(bool debug) {
                                     current_op->type, debug);
 
     CHECK(status == StatusCode::Success)
-        << current_op->layer-> // ??????????
+        << current_op->layer->layer_name() // ??????????
         << " layer forward failed, error code: " << int32_t(status);
 
     current_op->has_forward = true;
