@@ -143,7 +143,7 @@ public:
    *          format internally.
    * @note Typo in function name 'set_weught' is preserved for compatibility
    */
-  virtual void set_weught(const std::vector<float>& weights);
+  virtual void set_weight(const std::vector<float>& weights);
 
   /**
    * @brief Set the layer's biases from a flat float vector
