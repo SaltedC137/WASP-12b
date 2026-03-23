@@ -11,7 +11,6 @@
 #include "runtime/rt_param.hpp"
 #include "runtime/rt_type.hpp"
 #include "nn/layer.hpp"
-#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -89,6 +88,8 @@ bool RuntimeGraph::Init() {
   this->graphstatus_ = GraphStatus::NeedBuild;
   return true;
 }
+
+
 
 template <typename T>
 void RuntimeGraph::InitGraphOperatorsInput(

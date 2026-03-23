@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 
 # Find Armadillo
 find_package(Armadillo REQUIRED)
+# find_package(OpenCV REQUIRED)
 
 # Collect source files from core/ and root src/
 set(DL4CPP_SOURCES
@@ -70,25 +71,42 @@ if(NOT CMAKE_CXX_STANDARD)
     )
 endif()
 
-# Tests
+# Tests==============================================
 option(DL4CPP_BUILD_TESTS "Build DL4Cpp tests" ON)
 
 if(DL4CPP_BUILD_TESTS)
     enable_testing()
 
+    # Existing tensor tests
     add_executable(dl4cpp_test example/ex.cpp)
     target_link_libraries(dl4cpp_test PRIVATE DL4Cpp)
     add_test(NAME TensorExample COMMAND dl4cpp_test)
 
-endif()
+    # Runtime attribute tests
+    add_executable(test_attr test/test_attr.cpp)
+    target_link_libraries(test_attr PRIVATE DL4Cpp)
+    add_test(NAME AttrTest COMMAND test_attr)
 
-# Benchmarks
-option(DL4CPP_BUILD_BENCHMARKS "Build DL4Cpp benchmarks" ON)
+    # Runtime parameter tests
+    add_executable(test_param test/test_param.cpp)
+    target_link_libraries(test_param PRIVATE DL4Cpp)
+    add_test(NAME ParamTest COMMAND test_param)
 
-if(DL4CPP_BUILD_BENCHMARKS)
+    # Runtime graph/operator/operand tests
+    add_executable(test_runtime test/test_runtime.cpp)
+    target_link_libraries(test_runtime PRIVATE DL4Cpp)
+    add_test(NAME RuntimeTest COMMAND test_runtime)
+
     add_executable(dl4cpp_bench example/bench.cpp)
     target_link_libraries(dl4cpp_bench PRIVATE DL4Cpp)
+    add_test(NAME Bench COMMAND dl4cpp_bench)
+
 endif()
+
+
+
+# Tests==============================================
+
 
 # Installation
 include(GNUInstallDirs)
