@@ -89,12 +89,36 @@ void ParamLayer::set_weight(const std::vector<float> &weights) {
 
   for (uint32_t idx = 0; idx < batch_size; ++idx) {
     const uint32_t start_offset = idx * blob_size;
-    this->weights_[idx]->Fill(raw_weights + start_offset, blob_size);
+    std::vector<float> blob_vec(raw_weights + start_offset,
+                                raw_weights + start_offset + blob_size);
+    this->weights_[idx]->Fill(blob_vec, true);
   }
 }
 
+void ParamLayer::set_bias(const std::vector<float> &bias) {
+  if (this->bias_.empty()) {
+    return;
+  }
+  
+  const uint32_t batch_size = this->bias_.size();
+  size_t bias_size = 0;
+  for (const auto &b : this->bias_) {
+    bias_size += b->size();
 
+    const size_t elem_size = bias.size();
+    CHECK_EQ(bias_size, elem_size);
+    CHECK_EQ(elem_size % batch_size, 0);
 
+    const uint32_t blob_size = elem_size / batch_size;
+    const float *raw_bias = bias.data();
 
+    for (uint32_t idx = 0; idx < batch_size; ++idx) {
+      const uint32_t start_offset = idx * blob_size;
+      std::vector<float> blob_vec(raw_bias + start_offset,
+                                  raw_bias + start_offset + blob_size);
+      this->bias_[idx]->Fill(blob_vec, true);
+    }
+  }
+}
 
 } // namespace ctl
