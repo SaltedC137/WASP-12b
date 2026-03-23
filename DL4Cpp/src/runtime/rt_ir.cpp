@@ -8,12 +8,16 @@
 
 #include "ir.h"
 #include "log.hpp"
+#include "nn/layer.hpp"
+#include "nn/layer_factory.hpp"
 #include "runtime/rt_param.hpp"
 #include "runtime/rt_type.hpp"
-#include "nn/layer.hpp"
 #include <cstdint>
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <vector>
+
 
 namespace ctl {
 
@@ -88,8 +92,6 @@ bool RuntimeGraph::Init() {
   this->graphstatus_ = GraphStatus::NeedBuild;
   return true;
 }
-
-
 
 template <typename T>
 void RuntimeGraph::InitGraphOperatorsInput(
@@ -304,4 +306,44 @@ void RuntimeGraph::Forward(bool debug) {
     }
   }
 }
+
+template <typename T>
+std::shared_ptr<Layer<T>>
+RuntimeGraph::CreateLayer(const std::shared_ptr<RuntimeOperatorBase<T>> &op) {
+  LOG_IF(FATAL, !op) << "Operator is empty!";
+  auto layer = LayerRegister::CreateLayer(op);
+  LOG_IF(FATAL, !layer) << "Layer init failed " << op->type;
+  return layer;
+}
+
+void RuntimeGraph::CreateNodeRelation() {
+  std::unordered_map<std::string, decltype(this->operators_.front())>
+      op_hash_map;
+  op_hash_map.reserve(this->operators_.size());
+  for (const auto &op : this->operators_) {
+    op_hash_map[op->name] = op;
+  }
+
+  for (const auto &op : this->operators_) {
+    for (const auto &next_op_name : op->output_names) {
+      auto it = op_hash_map.find(next_op_name);
+      if (it != op_hash_map.end() && it->second != op) {
+        op->output_operators.insert({next_op_name, it->second});
+      } else {
+        LOG(WARNING) << "Graph relation warning: Cannot find output operator ["
+                     << next_op_name << "] for node [" << op->name << "]";
+      }
+    }
+    if (op->type == "pnnx.Input" || op->type == "pnnx.Output") {
+      continue;
+    }
+
+    auto layer = RuntimeGraph::CreateLayer(op);
+    CHECK(layer != nullptr) << "Create layer failed for op " << op->name;
+    op->layer = layer;
+    layer->set_runtime_operator(op);
+  }
+}
+
+
 } // namespace ctl
