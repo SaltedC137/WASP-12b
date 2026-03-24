@@ -4,7 +4,7 @@
 #include <string>
 
 namespace ctl {
-namespace activation {
+namespace nn {
 
 std::string ActivationTypeToString(ActivationType type) {
   std::string activation_type_str;

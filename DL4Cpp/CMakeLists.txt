@@ -62,6 +62,7 @@ if(OpenMP_CXX_FOUND)
     message(STATUS "Found OpenMP! Enabling multi-threading for DL4Cpp.")
     target_link_libraries(DL4Cpp PUBLIC OpenMP::OpenMP_CXX)
     target_compile_definitions(DL4Cpp PUBLIC ARMA_USE_OPENMP)
+    target_compile_options(DL4Cpp PUBLIC -mavx2)
 endif()
 
 

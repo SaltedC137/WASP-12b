@@ -12,7 +12,7 @@
 #include <vector>
 
 namespace ctl {
-namespace activation {
+namespace nn {
 
 using ActivationFunc = std::function<void(sften, sften)>;
 
