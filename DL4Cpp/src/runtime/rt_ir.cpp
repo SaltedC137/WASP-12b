@@ -4,6 +4,7 @@
 #include "check.hpp"
 #include "runtime/rt_attr.hpp"
 #include "runtime/rt_op.hpp"
+#include "tensor.hpp"
 #include "utils/layer_bench.hpp"
 
 #include "ir.h"
@@ -12,12 +13,12 @@
 #include "nn/layer_factory.hpp"
 #include "runtime/rt_param.hpp"
 #include "runtime/rt_type.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 
 namespace ctl {
 
@@ -343,6 +344,108 @@ void RuntimeGraph::CreateNodeRelation() {
     op->layer = layer;
     layer->set_runtime_operator(op);
   }
+}
+
+void RuntimeGraph::set_inputs(const std::string &input_name,
+                              const std::vector<sften> &inputs) {
+  CHECK(this->graphstatus_ == GraphStatus::Complete) << "Graph need be build!";
+  std::shared_ptr<RuntimeOperator> input_op;
+  for (auto op : this->input_ops_) {
+    if (op->name == input_name) {
+      input_op = op;
+      break;
+    }
+  }
+  CHECK(input_op != nullptr) << "Cannot find input operator " << input_name;
+  PropLayerOutputs(input_op, inputs);
+}
+
+template <typename T>
+void PropLayerOutputs(
+    const std::shared_ptr<RuntimeOperatorBase<T>> &current_op,
+    const std::vector<std::shared_ptr<Tensor<T>>> &LayerOutputs) {
+  for (const auto &[_, output_op] : current_op->output_operators) {
+    const auto &next_input_operands = output_op->input_operands;
+    const auto &next_input_operands_iter =
+        next_input_operands.find(current_op->name);
+    if (next_input_operands_iter != next_input_operands.end()) {
+      std::vector<sten<T>> &next_input_datas =
+          next_input_operands_iter->second->datas;
+      for (uint32_t i = 0; i < LayerOutputs.size(); i++) {
+        const sten<T> &layer_output_data = LayerOutputs.at(i);
+        if (next_input_datas.at(i) != nullptr) {
+          CHECK(next_input_datas.at(i)->shapes() ==
+                layer_output_data->shapes());
+        }
+        next_input_datas.at(i) = layer_output_data;
+      }
+    }
+  }
+}
+
+void RuntimeGraph::ReverseToSort() {
+  for (const auto &op : operators_) {
+    if (op != nullptr && !op->has_forward) {
+      int32_t current_forward_idx = 0;
+      this->ReverseToSortInternal(op, current_forward_idx);
+    }
+  }
+
+  // lambda function to sort the operators by start_time
+
+  std::sort(operators_.begin(), operators_.end(),
+            [](const auto &op1, const auto &op2) {
+              return op1->start_time < op2->start_time;
+            });
+
+  int32_t forward_index = 1;
+  for (const auto &op : operators_) {
+    op->start_time = forward_index;
+    forward_index++;
+  }
+
+  for (const auto &op : operators_) {
+    const auto &next_ops = op->output_operators;
+    int32_t last_forward_index = -1;
+    for (const auto &[_, next_op] : next_ops) {
+      if (next_op->start_time >= last_forward_index) {
+        last_forward_index = next_op->start_time;
+      }
+    }
+    if (last_forward_index == -1) {
+      op->end_time = op->start_time + 1;
+    } else {
+      op->end_time = last_forward_index;
+    }
+    op->occur_end_time = -1;
+  }
+}
+
+template <typename T>
+void RuntimeGraph::ReverseToSortInternal(
+    const std::shared_ptr<RuntimeOperatorBase<T>> &root_op,
+    int32_t &current_forward_idx) {
+  LOG_IF(FATAL, !root_op) << "The root_op is null";
+  if (root_op->input_operands.empty() && !root_op->has_forward) {
+    this->input_ops_.push_back(root_op);
+  }
+  if (root_op->output_names.empty() && !root_op->has_forward) {
+    this->output_ops_.push_back(root_op);
+  }
+
+  root_op->has_forward = true;
+  const auto &next_ops = root_op->output_operators;
+  for (const auto &[_, op] : next_ops) {
+    if (op != nullptr && !op->has_forward) {
+      this->ReverseToSortInternal(op, current_forward_idx);
+    }
+  }
+
+  for(const auto&[_,op]:next_ops){
+    CHECK_EQ(op->has_forward, true);
+  }
+  root_op->start_time = current_forward_idx;
+  current_forward_idx++;
 }
 
 
