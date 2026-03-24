@@ -11,13 +11,14 @@ set(DL4CPP_SOURCES
     src/core/tensor_math.cpp
     src/core/tensor_linalg.cpp
     src/nn/layer.cpp
+    src/nn/layer_factory.cpp
+    src/nn/param_layer.cpp
     src/utils/log.cpp
     src/pnnx/ir.cpp
     src/pnnx/store_zip.cpp
     src/runtime/rt_op.cpp
     src/runtime/rt_ir.cpp
-
-    # src/nn/layer.cpp #TODO
+    src/utils/layer_bench.cpp
 )
 
 # Create static library
@@ -38,6 +39,7 @@ target_include_directories(DL4Cpp
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/nn>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/utils>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/pnnx>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/runtime>
         $<INSTALL_INTERFACE:include>
         $<INSTALL_INTERFACE:include/core>
 )

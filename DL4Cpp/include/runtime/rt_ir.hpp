@@ -53,7 +53,7 @@ public:
    * @details Retrieves the output tensor(s) from a specified operator in the
    * graph. Used after Forward() to access inference results.
    */
-  std::vector<ften> get_output(const std::string &output_name);
+  std::vector<sften> get_outputs(const std::string &output_name);
 
   /**
    * @brief Set input tensor for a named input operator

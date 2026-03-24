@@ -1,7 +1,6 @@
 
 
 #include "nn/ops/activation.hpp"
-#include "core/tensor.hpp"
 #include <string>
 
 namespace ctl {

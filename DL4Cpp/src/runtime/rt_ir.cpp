@@ -318,7 +318,7 @@ RuntimeGraph::CreateLayer(const std::shared_ptr<RuntimeOperatorBase<T>> &op) {
 }
 
 void RuntimeGraph::CreateNodeRelation() {
-  std::unordered_map<std::string, decltype(this->operators_.front())>
+  std::unordered_map<std::string, std::shared_ptr<ctl::RuntimeOperatorBase<float>>>
       op_hash_map;
   op_hash_map.reserve(this->operators_.size());
   for (const auto &op : this->operators_) {
@@ -361,7 +361,7 @@ void RuntimeGraph::set_inputs(const std::string &input_name,
 }
 
 template <typename T>
-void PropLayerOutputs(
+void RuntimeGraph::PropLayerOutputs(
     const std::shared_ptr<RuntimeOperatorBase<T>> &current_op,
     const std::vector<std::shared_ptr<Tensor<T>>> &LayerOutputs) {
   for (const auto &[_, output_op] : current_op->output_operators) {
@@ -448,5 +448,63 @@ void RuntimeGraph::ReverseToSortInternal(
   current_forward_idx++;
 }
 
+
+std::vector<sften> RuntimeGraph::get_outputs(const std::string& output_name)  {
+  CHECK(this->graphstatus_ == GraphStatus::Complete);
+  std::shared_ptr<RuntimeOperator> output_op;
+  for (auto op : this->output_ops_) {
+    if (op->name == output_name) {
+      output_op = op;
+    }
+  }
+
+  CHECK(output_op != nullptr) << "Can not find the output operator: " << output_name;
+  std::vector<sften> outputs;
+  for (const auto& input_operand : output_op->input_operands_seq) {
+    std::copy(input_operand->datas.begin(), input_operand->datas.end(),
+              std::back_inserter(outputs));
+  }
+  return outputs;
+}
+
+
+bool RuntimeGraph::is_input_op(const std::string& op_name) const {
+  for (auto op : this->input_ops_) {
+    CHECK(op != nullptr);
+    if (op->name == op_name) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool RuntimeGraph::is_output_op(const std::string& op_name) const {
+  for (auto op : this->output_ops_) {
+    CHECK(op != nullptr);
+    if (op->name == op_name) {
+      return true;
+    }
+  }
+  return false;
+}
+
+template <typename T>
+void RuntimeGraph::InitGraphOperatorsOutput(
+    const std::vector<pnnx::Operand*>& outputs,
+    const std::shared_ptr<RuntimeOperatorBase<T>>& runtime_operator) {
+  if (outputs.empty()) {
+    return;
+  }
+  CHECK(runtime_operator != nullptr) << "The runtime operator is null pointer";
+  for (const pnnx::Operand* output : outputs) {
+    if (!output) {
+      continue;
+    }
+    const auto& consumers = output->consumers;
+    for (const auto& c : consumers) {
+      runtime_operator->output_names.push_back(c->name);
+    }
+  }
+}
 
 } // namespace ctl

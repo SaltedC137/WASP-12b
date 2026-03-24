@@ -51,7 +51,7 @@ template <typename T> struct RuntimeOperandBase {
   explicit RuntimeOperandBase(std::string name, std::vector<int32_t> shapes,
                               std::vector<std::shared_ptr<Tensor<T>>> data,
                               RuntimeDataType type)
-      : name(std::move(name)), shapes(std::move(shapes)), type(type) {}
+      : name(std::move(name)), shapes(std::move(shapes)), datas(std::move(data)), type(type) {}
 
   /**
    * @brief Construct operand with allocated data slots
