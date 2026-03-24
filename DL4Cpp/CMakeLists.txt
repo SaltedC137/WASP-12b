@@ -80,9 +80,9 @@ if(DL4CPP_BUILD_TESTS)
     enable_testing()
 
     # Existing tensor tests
-    add_executable(dl4cpp_test example/ex.cpp)
-    target_link_libraries(dl4cpp_test PRIVATE DL4Cpp)
-    add_test(NAME TensorExample COMMAND dl4cpp_test)
+    add_executable(test_tensor test/test_tensor.cpp)
+    target_link_libraries(test_tensor PRIVATE DL4Cpp)
+    add_test(NAME TensorExample COMMAND test_tensor)
 
     # Runtime attribute tests
     add_executable(test_attr test/test_attr.cpp)
@@ -99,12 +99,11 @@ if(DL4CPP_BUILD_TESTS)
     target_link_libraries(test_runtime PRIVATE DL4Cpp)
     add_test(NAME RuntimeTest COMMAND test_runtime)
 
-    add_executable(dl4cpp_bench example/bench.cpp)
-    target_link_libraries(dl4cpp_bench PRIVATE DL4Cpp)
-    add_test(NAME Bench COMMAND dl4cpp_bench)
+    add_executable(bench_calcu test/bench_calcu.cpp)
+    target_link_libraries(bench_calcu PRIVATE DL4Cpp)
+    add_test(NAME Bench COMMAND bench_calcu)
 
 endif()
-
 
 
 # Tests==============================================
