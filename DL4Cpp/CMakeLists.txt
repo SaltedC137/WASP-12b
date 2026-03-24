@@ -103,6 +103,11 @@ if(DL4CPP_BUILD_TESTS)
     target_link_libraries(bench_calcu PRIVATE DL4Cpp)
     add_test(NAME Bench COMMAND bench_calcu)
 
+    # Sigmoid activation tests
+    add_executable(test_sigmoid test/test_sigmoid.cpp)
+    target_link_libraries(test_sigmoid PRIVATE DL4Cpp)
+    add_test(NAME SigmoidTest COMMAND test_sigmoid)
+
 endif()
 
 

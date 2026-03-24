@@ -1,6 +1,8 @@
 
 
 
+
+
 #ifndef SIGMOID_HPP
 #define SIGMOID_HPP
 
@@ -12,7 +14,6 @@ namespace ctl {
 namespace nn {
 
 ActivationFunc ApplySSEActivation(ActivationType act_type);
-
 
 }
 }
