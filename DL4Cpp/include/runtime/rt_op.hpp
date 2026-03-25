@@ -107,7 +107,6 @@ template <typename T> struct RuntimeOperatorBase {
 /**
  * @brief Check if an attribute exists in the operator
  * @tparam T Data type
- * @param attr_name Attribute name to search for
  * @return true if found, false otherwise
  */
 template <typename T>
@@ -118,7 +117,6 @@ bool RuntimeOperatorBase<T>::has_attribute(const std::string &attr_name) {
 /**
  * @brief Check if a parameter exists in the operator
  * @tparam T Data type
- * @param param_name Parameter name to search for
  * @return true if found, false otherwise
  */
 template <typename T>

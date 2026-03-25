@@ -21,6 +21,15 @@
             }
         },
         {
+            "name": "windows-msys2-docs",
+            "displayName": "Windows (MSYS2 MinGW) + Doxygen",
+            "description": "Build with Doxygen documentation",
+            "inherits": "windows-msys2",
+            "cacheVariables": {
+                "DL4CPP_BUILD_DOCS": "ON"
+            }
+        },
+        {
             "name": "linux",
             "displayName": "Linux",
             "description": "Build on Linux",
@@ -40,6 +49,15 @@
             }
         },
         {
+            "name": "linux-docs",
+            "displayName": "Linux + Doxygen",
+            "description": "Build with Doxygen documentation",
+            "inherits": "linux",
+            "cacheVariables": {
+                "DL4CPP_BUILD_DOCS": "ON"
+            }
+        },
+        {
             "name": "macos",
             "displayName": "macOS",
             "description": "Build on macOS",
@@ -56,6 +74,15 @@
                 "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/out/bin",
                 "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/out/bin",
                 "CMAKE_ARCHIVE_OUTPUT_DIRECTORY": "${sourceDir}/out/bin"
+            }
+        },
+        {
+            "name": "macos-docs",
+            "displayName": "macOS + Doxygen",
+            "description": "Build with Doxygen documentation",
+            "inherits": "macos",
+            "cacheVariables": {
+                "DL4CPP_BUILD_DOCS": "ON"
             }
         },
         {

@@ -14,9 +14,6 @@ file(GLOB_RECURSE DL4CPP_SOURCES
     src/runtime/*.cpp
 )
 
-
-
-
 # Create static library
 add_library(DL4Cpp STATIC ${DL4CPP_SOURCES})
 

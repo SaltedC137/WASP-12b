@@ -1,0 +1,60 @@
+DOXYFILE_ENCODING      = UTF-8
+PROJECT_NAME           = "WASP-12b DL4Cpp"
+PROJECT_NUMBER         = "${PROJECT_VERSION}"
+PROJECT_BRIEF          = "A modern C++23 deep learning inference library"
+
+# This tag is used for filtering conditional content in the documentation.
+# If the tag is set to @WASP_12b_DL4Cpp@, then the content inside the
+# "<!-- #if WASP_12b_DL4Cpp -->" and "<!-- #endif WASP_12b_DL4Cpp -->"
+# lines will be included in the documentation.
+# The tag can be set by using the -D option in the Doxyfile command line.
+
+
+INPUT                  = @CMAKE_SOURCE_DIR@/DL4Cpp/include
+RECURSIVE              = YES
+FILE_PATTERNS          = *.hpp *.h
+EXCLUDE                = @CMAKE_SOURCE_DIR@/DL4Cpp/include/utils/ubench.h
+
+OUTPUT_DIRECTORY       = @CMAKE_SOURCE_DIR@/doc
+
+CPP_CLI_SUPPORT        = YES
+ENABLE_PREPROCESSING   = YES
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+HIDE_UNDOC_MEMBERS     = NO
+
+
+HAVE_DOT               = YES
+CLASS_GRAPH            = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_DYNAMIC_MENUS     = YES
+SEARCHENGINE           = YES
+GENERATE_TREEVIEW      = YES
+
+
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = YES
+
+
+
+# chm output
+
+HHC_LOCATION         = C:/Progra~2/HTML~1/hhc.exe
+GENERATE_HTMLHELP    = YES
+CHM_FILE             = D:/.Project/.c/WASP-12b/doc/html/WASP-12b_DL4Cpp.chm
+HTML_DYNAMIC_MENUS   = YES
+SEARCHENGINE         = YES
+
+
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = YES
+WARN_LOGFILE           = doxygen_warnings.log

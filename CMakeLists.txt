@@ -19,3 +19,32 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Subdirectories
 add_subdirectory("DL4Cpp")
+
+
+
+option(DL4CPP_BUILD_DOCS "Build Doxygen documentation" OFF)
+
+if(DL4CPP_BUILD_DOCS)
+    find_package(Doxygen REQUIRED COMPONENTS dot)
+
+    if(DOXYGEN_FOUND)
+        set(DOXYGEN_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/doc)
+
+        configure_file(
+            ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in
+            ${CMAKE_BINARY_DIR}/Doxyfile
+            @ONLY
+        )
+
+        add_custom_target(docs
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DOXYGEN_OUTPUT_DIR}
+            COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            COMMENT "Generating API documentation with Doxygen"
+            VERBATIM
+        )
+
+        message(STATUS "Doxygen documentation target 'docs' is available")
+        message(STATUS "Output will be in: ${DOXYGEN_OUTPUT_DIR}")
+    endif()
+endif()

@@ -61,7 +61,7 @@ env/
 # C/C++
 *.d
 *.pdb
-*.in
+
 
 # Java
 *.class
@@ -100,3 +100,6 @@ htmlcov/
 # 文档（可选）
 # docs/_build/
 
+#doxygen
+html
+latex

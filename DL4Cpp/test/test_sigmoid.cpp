@@ -1,6 +1,6 @@
 /**
  * @file test_sigmoid.cpp
- * @brief Brute-force tests for Sigmoid activation function
+ * @brief Brute-force tests and benchmarks for Sigmoid activation function
  * @date 2026-03-24
  */
 
@@ -9,9 +9,12 @@
 #include "nn/ops/activation.hpp"
 #include "utils/check.hpp"
 #include <cmath>
+#include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <vector>
+
 
 using namespace ctl;
 using namespace ctl::nn;
@@ -24,6 +27,52 @@ float ReferenceSigmoid(float x) {
 // Helper function to compare floats with tolerance
 bool FloatEq(float a, float b, float eps = 1e-5f) {
   return std::abs(a - b) < eps;
+}
+
+// Benchmark helper: measure execution time in milliseconds
+template<typename Func>
+double BenchmarkFunction(Func&& func, int iterations = 10) {
+  std::vector<double> times;
+  times.reserve(iterations);
+  
+  // Warm-up
+  func();
+  
+  // Benchmark
+  for (int i = 0; i < iterations; ++i) {
+    auto start = std::chrono::high_resolution_clock::now();
+    func();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+    times.push_back(elapsed.count());
+  }
+  
+  // Calculate average
+  double avg = 0.0;
+  for (double t : times) avg += t;
+  avg /= times.size();
+  
+  return avg;
+}
+
+// Print benchmark results with throughput
+void PrintBenchmarkResult(const std::string& name, double time_ms, size_t num_elements) {
+  std::cout << std::fixed << std::setprecision(3);
+  std::cout << "  [BENCH] " << name << "\n";
+  std::cout << "    Time: " << time_ms << " ms\n";
+  std::cout << "    Elements: " << num_elements << "\n";
+  
+  // Calculate throughput (elements per second)
+  double elements_per_sec = (num_elements / time_ms) * 1000.0;
+  double giga_elements_per_sec = elements_per_sec / 1e9;
+  
+  std::cout << "    Throughput: " << std::setprecision(2) << giga_elements_per_sec << " Gelem/s\n";
+  
+  // Calculate bandwidth (assuming 4 bytes per float for read + write)
+  double bytes = num_elements * 4 * 2; // read + write
+  double bandwidth_gbps = (bytes / time_ms) * 1000.0 / 1e9;
+  std::cout << "    Bandwidth: " << std::setprecision(2) << bandwidth_gbps << " GB/s\n";
+  std::cout << "\n";
 }
 
 void TestSigmoid_Nullptr() {
@@ -344,6 +393,144 @@ void TestSigmoid_VeryLargeTensor() {
   std::cout << "[Pass] Very large tensor (128x128) stress test\n\n";
 }
 
+// ===== Sigmoid Benchmark Functions =====
+
+void BenchmarkSigmoid_SmallTensor() {
+  std::cout << "--- Benchmark: Sigmoid on Small Tensor (32x32) ---\n";
+
+  auto input = std::make_shared<Tensor<float>>(32, 32);
+  auto output = std::make_shared<Tensor<float>>(32, 32);
+  input->Rand();
+
+  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+
+  double avg_time = BenchmarkFunction([&]() {
+    activation_func(input, output);
+  }, 100);
+
+  PrintBenchmarkResult("Sigmoid 32x32", avg_time, 32 * 32);
+}
+
+void BenchmarkSigmoid_MediumTensor() {
+  std::cout << "--- Benchmark: Sigmoid on Medium Tensor (128x128) ---\n";
+
+  auto input = std::make_shared<Tensor<float>>(128, 128);
+  auto output = std::make_shared<Tensor<float>>(128, 128);
+  input->Rand();
+
+  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+
+  double avg_time = BenchmarkFunction([&]() {
+    activation_func(input, output);
+  }, 50);
+
+  PrintBenchmarkResult("Sigmoid 128x128", avg_time, 128 * 128);
+}
+
+void BenchmarkSigmoid_LargeTensor() {
+  std::cout << "--- Benchmark: Sigmoid on Large Tensor (256x256) ---\n";
+
+  auto input = std::make_shared<Tensor<float>>(256, 256);
+  auto output = std::make_shared<Tensor<float>>(256, 256);
+  input->Rand();
+
+  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+
+  double avg_time = BenchmarkFunction([&]() {
+    activation_func(input, output);
+  }, 30);
+
+  PrintBenchmarkResult("Sigmoid 256x256", avg_time, 256 * 256);
+}
+
+void BenchmarkSigmoid_VeryLargeTensor() {
+  std::cout << "--- Benchmark: Sigmoid on Very Large Tensor (512x512) ---\n";
+
+  auto input = std::make_shared<Tensor<float>>(512, 512);
+  auto output = std::make_shared<Tensor<float>>(512, 512);
+  input->Rand();
+
+  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+
+  double avg_time = BenchmarkFunction([&]() {
+    activation_func(input, output);
+  }, 10);
+
+  PrintBenchmarkResult("Sigmoid 512x512", avg_time, 512 * 512);
+}
+
+void BenchmarkSigmoid_3DTensor() {
+  std::cout << "--- Benchmark: Sigmoid on 3D Tensor (8x128x128) ---\n";
+
+  auto input = std::make_shared<Tensor<float>>(8, 128, 128);
+  auto output = std::make_shared<Tensor<float>>(8, 128, 128);
+  input->Rand();
+
+  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+
+  double avg_time = BenchmarkFunction([&]() {
+    activation_func(input, output);
+  }, 20);
+
+  PrintBenchmarkResult("Sigmoid 8x128x128", avg_time, 8 * 128 * 128);
+}
+
+void BenchmarkSigmoid_BatchProcessing() {
+  std::cout << "--- Benchmark: Sigmoid Batch Processing (batch=16, features=1024) ---\n";
+
+  std::vector<sften> inputs(16);
+  std::vector<sften> outputs(16);
+  
+  for (int i = 0; i < 16; ++i) {
+    inputs[i] = std::make_shared<Tensor<float>>(1, 1024);
+    outputs[i] = std::make_shared<Tensor<float>>(1, 1024);
+    inputs[i]->Rand();
+  }
+
+  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+
+  double avg_time = BenchmarkFunction([&]() {
+    for (int i = 0; i < 16; ++i) {
+      activation_func(inputs[i], outputs[i]);
+    }
+  }, 50);
+
+  PrintBenchmarkResult("Sigmoid Batch (16x1024)", avg_time, 16 * 1024);
+}
+
+void BenchmarkSigmoid_Deep3DTensor() {
+  std::cout << "--- Benchmark: Sigmoid on Deep 3D Tensor (32x64x64) ---\n";
+
+  auto input = std::make_shared<Tensor<float>>(32, 64, 64);
+  auto output = std::make_shared<Tensor<float>>(32, 64, 64);
+  input->Rand();
+
+  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+
+  double avg_time = BenchmarkFunction([&]() {
+    activation_func(input, output);
+  }, 20);
+
+  PrintBenchmarkResult("Sigmoid 32x64x64", avg_time, 32 * 64 * 64);
+}
+
+void BenchmarkSigmoid_ImageNet() {
+  std::cout << "--- Benchmark: Sigmoid on ImageNet-sized Input (1x3x2240x2240 simulated) ---\n";
+
+  // Simulate ImageNet input: batch=1, channels=3, height=224, width=224
+  auto input = std::make_shared<Tensor<float>>(3, 2240, 2240);
+  auto output = std::make_shared<Tensor<float>>(3, 2240, 2240);
+  input->Rand();
+
+  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+
+  double avg_time = BenchmarkFunction([&]() {
+    activation_func(input, output);
+  }, 10);
+
+  PrintBenchmarkResult("Sigmoid 3x2240x2240 (ImageNet)", avg_time, 3 * 2240 * 2240);
+}
+
 void TestSigmoid_Deep3DTensor() {
   std::cout << "--- Test 15: Sigmoid deep 3D tensor (8x8x8) ---\n";
 
@@ -402,7 +589,36 @@ void TestSigmoid_OutputRange() {
   std::cout << "[Pass] Output range verification\n\n";
 }
 
-int main() {
+void RunAllBenchmarks() {
+  std::cout << "\n";
+  std::cout << "========================================\n";
+  std::cout << "  Sigmoid Performance Benchmarks\n";
+  std::cout << "========================================\n\n";
+
+  BenchmarkSigmoid_SmallTensor();
+  BenchmarkSigmoid_MediumTensor();
+  BenchmarkSigmoid_LargeTensor();
+  BenchmarkSigmoid_VeryLargeTensor();
+  BenchmarkSigmoid_3DTensor();
+  BenchmarkSigmoid_Deep3DTensor();
+  BenchmarkSigmoid_BatchProcessing();
+  BenchmarkSigmoid_ImageNet();
+
+  std::cout << "========================================\n";
+  std::cout << "  All benchmarks completed!\n";
+  std::cout << "========================================\n";
+}
+
+int main(int argc, char* argv[]) {
+  // Check for benchmark flag
+  bool run_benchmarks = false;
+  for (int i = 1; i < argc; ++i) {
+    std::string arg = argv[i];
+    if (arg == "--bench" || arg == "-b" || arg == "--benchmark") {
+      run_benchmarks = true;
+    }
+  }
+
   std::cout << "========================================\n";
   std::cout << "  Sigmoid Activation Function Tests\n";
   std::cout << "========================================\n\n";
@@ -428,6 +644,13 @@ int main() {
   std::cout << "========================================\n";
   std::cout << "  All Sigmoid tests completed!\n";
   std::cout << "========================================\n";
+
+  if (run_benchmarks) {
+    RunAllBenchmarks();
+  } else {
+    std::cout << "\n";
+    std::cout << "Hint: Run with --bench flag to execute performance benchmarks\n";
+  }
 
   return 0;
 }

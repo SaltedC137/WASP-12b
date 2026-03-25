@@ -76,15 +76,7 @@ struct RuntimeAttribute {
   std::vector<T> get(bool need_clear_weight = true);
 };
 
-/**
- * @brief Template implementation for weight data retrieval
- * @tparam T Target type (must be trivially copyable)
- * @param need_clear_weight Whether to clear weight data after retrieval
- * @return std::vector<T> Typed weight values
- * @details Performs memcpy from raw byte storage to typed vector. Includes
- * runtime checks for data validity and type matching. Uses if constexpr for
- * compile-time type branching with static_assert fallback for unsupported types.
- */
+// Template implementation for weight data retrieval
 template <class T>
   requires std::is_trivially_copyable_v<T>
 
