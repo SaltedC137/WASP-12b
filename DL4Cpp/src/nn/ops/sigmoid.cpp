@@ -2,6 +2,7 @@
 
 #include "nn/ops/sigmoid.hpp"
 #include "check.hpp"
+#include "log.hpp"
 #include "nn/ops/activation.hpp"
 #include "utils/fmath.hpp"
 #include <cstdint>
@@ -59,6 +60,19 @@ static void SigmoidSSE(sften input, sften output) {
   }
 }
 
+ActivationFunc ApplySSEActivation(ActivationType act_type) {
+  ActivationFunc function;
+  switch (act_type) {
+  case ActivationType::ActivationSigmoid: {
+    function = SigmoidSSE;
+    return function;
+  }
+  default: {
+    LOG(FATAL) << "Unknown SSE activation type: " << int32_t(act_type);
+  }
+  }
+  return function;
+}
 
 } // namespace nn
 } // namespace ctl

@@ -30,6 +30,8 @@ std::string ActivationTypeToString(ActivationType type);
 
 class ActivationLayer : public NoneParamLayer {
 public:
+  explicit ActivationLayer(nn::ActivationType type, std::string layer_name);
+  
   StatusCode Check(const std::vector<sften> &inputs,
                    const std::vector<sften> &outputs) override;
 

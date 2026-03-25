@@ -5,21 +5,17 @@ cmake_minimum_required(VERSION 3.14)
 find_package(Armadillo REQUIRED)
 # find_package(OpenCV REQUIRED)
 
-# Collect source files from core/ and root src/
-set(DL4CPP_SOURCES
-    src/core/tensor.cpp
-    src/core/tensor_math.cpp
-    src/core/tensor_linalg.cpp
-    src/nn/layer.cpp
-    src/nn/layer_factory.cpp
-    src/nn/param_layer.cpp
-    src/utils/log.cpp
-    src/pnnx/ir.cpp
-    src/pnnx/store_zip.cpp
-    src/runtime/rt_op.cpp
-    src/runtime/rt_ir.cpp
-    src/utils/layer_bench.cpp
+# Collect source files automatically
+file(GLOB_RECURSE DL4CPP_SOURCES
+    src/core/*.cpp
+    src/nn/*.cpp
+    src/utils/*.cpp
+    src/pnnx/*.cpp
+    src/runtime/*.cpp
 )
+
+
+
 
 # Create static library
 add_library(DL4Cpp STATIC ${DL4CPP_SOURCES})
@@ -40,6 +36,7 @@ target_include_directories(DL4Cpp
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/utils>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/pnnx>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/runtime>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/nn/ops>
         $<INSTALL_INTERFACE:include>
         $<INSTALL_INTERFACE:include/core>
 )
@@ -110,6 +107,13 @@ if(DL4CPP_BUILD_TESTS)
 
 endif()
 
+
+# AVX2 support (add after OpenMP section)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(DL4Cpp PRIVATE -mavx2 -mfma)
+elseif(MSVC)
+    target_compile_options(DL4Cpp PRIVATE /arch:AVX2)
+endif()
 
 # Tests==============================================
 

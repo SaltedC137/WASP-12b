@@ -19,5 +19,4 @@ ActivationFunc ApplySSEActivation(ActivationType act_type);
 }
 
 
-
 #endif
