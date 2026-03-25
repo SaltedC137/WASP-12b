@@ -34,7 +34,6 @@
 #include <stdlib.h>
 #include <string.h>  // for memcpy
 #include <limits>
-#include <cstdint>
 
 #if defined(_WIN32) && !defined(__GNUC__)
 #include <intrin.h>
