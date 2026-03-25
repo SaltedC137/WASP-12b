@@ -26,18 +26,25 @@ HIDE_UNDOC_MEMBERS     = NO
 
 
 HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = png
+DOT_MULTI_TARGETS      = NO
 CLASS_GRAPH            = YES
 CALL_GRAPH             = YES
 CALLER_GRAPH           = YES
 INCLUDE_GRAPH          = YES
 INCLUDED_BY_GRAPH      = YES
+GENERATE_LEGEND        = YES
+DOT_CLEANUP            = YES
 
 
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html
-HTML_DYNAMIC_MENUS     = YES
-SEARCHENGINE           = YES
-GENERATE_TREEVIEW      = YES
+HTML_DYNAMIC_MENUS     = NO
+SEARCHENGINE           = NO
+GENERATE_TREEVIEW      = NO
+HTML_COLORSTYLE        = DARK
+HTML_COPY_CLIPBOARD    = NO
+
 
 
 SOURCE_BROWSER         = YES
@@ -49,12 +56,19 @@ INLINE_SOURCES         = YES
 
 HHC_LOCATION         = C:/Progra~2/HTML~1/hhc.exe
 GENERATE_HTMLHELP    = YES
-CHM_FILE             = D:/.Project/.c/WASP-12b/doc/html/WASP-12b_DL4Cpp.chm
-HTML_DYNAMIC_MENUS   = YES
-SEARCHENGINE         = YES
+CHM_FILE             = WASP-12b_DL4Cpp.chm
+GENERATE_DOCSET      = NO
+GENERATE_XML         = NO
+GENERATE_RTF         = NO
+GENERATE_MAN         = NO
+GENERATE_LATEX       = NO
 
 
 WARNINGS               = YES
 WARN_IF_UNDOCUMENTED   = NO
 WARN_IF_DOC_ERROR      = YES
 WARN_LOGFILE           = doxygen_warnings.log
+
+
+INPUT = @CMAKE_SOURCE_DIR@/DL4Cpp/include @CMAKE_SOURCE_DIR@/README.md
+USE_MDFILE_AS_MAINPAGE = @CMAKE_SOURCE_DIR@/README.md

@@ -20,15 +20,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Subdirectories
 add_subdirectory("DL4Cpp")
 
-
-
 option(DL4CPP_BUILD_DOCS "Build Doxygen documentation" OFF)
 
 if(DL4CPP_BUILD_DOCS)
     find_package(Doxygen REQUIRED COMPONENTS dot)
 
     if(DOXYGEN_FOUND)
-        set(DOXYGEN_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/doc)
+
+        set(DOXYGEN_OUTPUT_DIR doc)
+        set(DOXYGEN_HTML_OUTPUT ${DOXYGEN_OUTPUT_DIR}/html)
+        set(DOXYGEN_HHP_FILE ${DOXYGEN_HTML_OUTPUT}/index.hhp)
 
         configure_file(
             ${CMAKE_SOURCE_DIR}/doc/Doxyfile.in
@@ -36,15 +37,27 @@ if(DL4CPP_BUILD_DOCS)
             @ONLY
         )
 
+        find_program(HHC_COMPILER hhc PATHS 
+            "C:/Progra~2/HTML~1"
+            "C:/PROGRA~2/HTML~1"
+        )
+
         add_custom_target(docs
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DOXYGEN_OUTPUT_DIR}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DOXYGEN_HTML_OUTPUT}
             COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Generating API documentation with Doxygen"
+            COMMAND ${CMAKE_COMMAND} -E echo "Compiling CHM file..."
+            COMMAND ${HHC_COMPILER} "${DOXYGEN_HTML_OUTPUT}/index.hhp"
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Generating API documentation with Doxygen and compiling CHM"
             VERBATIM
         )
 
-        message(STATUS "Doxygen documentation target 'docs' is available")
-        message(STATUS "Output will be in: ${DOXYGEN_OUTPUT_DIR}")
+        if(HHC_COMPILER)
+            message(STATUS "Doxygen documentation target 'docs' is available")
+            message(STATUS "HTML Help Compiler found: ${HHC_COMPILER}")
+            message(STATUS "CHM file will be: ${DOXYGEN_HTML_OUTPUT}/WASP-12b_DL4Cpp.chm")
+        else()
+            message(STATUS "Doxygen documentation target 'docs' is available (CHM compilation disabled - hhc.exe not found)")
+        endif()
     endif()
 endif()
