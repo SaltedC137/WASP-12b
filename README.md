@@ -127,9 +127,10 @@ sudo apt-get install -y libarmadillo-dev cmake g++ libomp-dev
 # Clone and build
 git clone https://github.com/yourusername/WASP-12b.git
 cd WASP-12b
-mkdir build && cd build
-cmake ..
-cmake --build . -j$(nproc)
+
+# Configure and build using CMake presets
+cmake --preset linux
+cmake --build --preset linux-build -j$(nproc)
 
 # Run tests
 ./DL4Cpp/test_tensor
@@ -143,9 +144,20 @@ cmake --build . -j$(nproc)
 brew install armadillo cmake libomp
 
 # Build
-mkdir build && cd build
-cmake ..
-cmake --build . -j$(sysctl -n hw.ncpu)
+cd WASP-12b
+cmake --preset macos
+cmake --build --preset macos-build -j$(sysctl -n hw.ncpu)
+```
+
+#### Windows (MSYS2 MinGW)
+
+```powershell
+# Install dependencies (via MSYS2)
+pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-armadillo mingw-w64-x86_64-openmp
+
+# Configure and build using CMake presets
+cmake --preset windows-msys2
+cmake --build --preset default-build -j$(nproc)
 ```
 
 #### Windows (vcpkg)
@@ -157,7 +169,7 @@ cd vcpkg
 .\bootstrap-vcpkg.bat
 .\vcpkg install armadillo:x64-windows
 
-# Build
+# Build (note: vcpkg requires manual toolchain specification)
 $env:VCPKG_ROOT="C:\path\to\vcpkg"
 mkdir build && cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
@@ -288,15 +300,24 @@ int main() {
 ### Minimal Build (No Tests/Benchmarks)
 
 ```bash
-cmake .. -DDL4CPP_BUILD_TESTS=OFF -DDL4CPP_BUILD_BENCHMARKS=OFF
-cmake --build .
+cmake --preset windows-msys2 -DDL4CPP_BUILD_TESTS=OFF -DDL4CPP_BUILD_BENCHMARKS=OFF
+cmake --build --preset default-build
 ```
 
 ### Generate Documentation
 
 ```bash
-cmake .. -DDL4CPP_BUILD_DOCS=ON
-cmake --build . --target docs
+# Windows (MSYS2)
+cmake --preset windows-msys2-docs
+cmake --build build --target docs
+
+# Linux
+cmake --preset linux-docs
+cmake --build build --target docs
+
+# macOS
+cmake --preset macos-docs
+cmake --build build --target docs
 ```
 
 ---
@@ -407,6 +428,40 @@ Individual test executables:
 - `test_param` — Runtime parameter handling
 - `test_sigmoid` — Sigmoid activation function (16 test cases)
 - `bench_calcu` — Performance benchmarks
+
+---
+
+## Build Presets
+
+The project provides CMake presets for convenient cross-platform builds. List available presets:
+
+```bash
+cmake --list-presets
+```
+
+**Available presets:**
+
+| Preset | Platform | Description |
+|--------|----------|-------------|
+| `windows-msys2` | Windows | MSYS2 MinGW build |
+| `windows-msys2-docs` | Windows | MSYS2 + Doxygen |
+| `linux` | Linux | Standard Linux build |
+| `linux-docs` | Linux | Linux + Doxygen |
+| `macos` | macOS | Standard macOS build |
+| `macos-docs` | macOS | macOS + Doxygen |
+| `default` | Auto | Auto-selects platform preset |
+
+**Build commands:**
+
+```bash
+# Standard build (auto-detects platform)
+cmake --preset default
+cmake --build --preset default-build -j 32
+
+# Build with documentation
+cmake --preset windows-msys2-docs
+cmake --build build --target docs
+```
 
 ---
 
