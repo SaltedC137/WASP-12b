@@ -5,7 +5,6 @@
 **DL4Cpp** is a modern C++23 deep learning inference library featuring tensor operations, neural network components, and runtime computation graph execution with PNNX model support.
 
 **Version:** 0.1.0  
-**License:** MIT  
 **C++ Standard:** C++23  
 
 ---
@@ -257,32 +256,6 @@ Individual tests:
 
 ---
 
-## Implementation Status
-
-### Completed (v0.1)
-- [x] Tensor core (1D/2D/3D)
-- [x] Element-wise arithmetic with broadcasting
-- [x] Linear algebra operations
-- [x] Runtime computation graph
-- [x] PNNX model loading
-- [x] Activation functions (6 types)
-- [x] Layer factory pattern
-- [x] Logging and assertions
-- [x] Thread configuration
-
-### In Progress (v0.2)
-- [/] Conv2D layer
-- [/] Pooling layers
-- [/] Fully connected layer
-- [/] Batch normalization
-
-### Planned (v0.3+)
-- [ ] Dropout, Softmax, LayerNorm
-- [ ] Model serialization
-- [ ] GPU acceleration (CUDA)
-- [ ] Python bindings
-
----
 
 ## Performance Notes
 
@@ -335,22 +308,6 @@ CHECK_EQ(tensor.channels(), 3);
 CHECK_NE(ptr, nullptr);
 CHECK_GE(value, 0);
 CHECK_LT(index, size);
-```
-
----
-
-## License
-
-MIT License - See LICENSE file for details.
-
-```
-Copyright (c) 2026 WASP-12b Contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software.
 ```
 
 ---
