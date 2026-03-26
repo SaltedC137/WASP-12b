@@ -1,6 +1,6 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "WASP-12b DL4Cpp"
-PROJECT_NUMBER         = "${PROJECT_VERSION}"
+PROJECT_NUMBER         = "V1.0.2"
 PROJECT_BRIEF          = "A modern C++23 deep learning inference library"
 
 # This tag is used for filtering conditional content in the documentation.

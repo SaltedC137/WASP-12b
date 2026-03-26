@@ -11,11 +11,11 @@
 
 ## Quick Links
 
-- [Tensor Engine](xref:core_tensor) - Multi-dimensional tensor operations
-- [Neural Network Layers](xref:nn_layers) - Activation functions and layer abstractions
-- [Runtime Graph](xref:runtime_graph) - Computation graph execution
-- [PNNX Support](xref:pnnx_format) - PyTorch model loading
-- [Utilities](xref:utils) - Logging, assertions, and thread management
+- [Tensor Engine] - Multi-dimensional tensor operations
+- [Neural Network Layers] - Activation functions and layer abstractions
+- [Runtime Graph] - Computation graph execution
+- [PNNX Support] - PyTorch model loading
+- [Utilities] - Logging, assertions, and thread management
 
 ---
 
