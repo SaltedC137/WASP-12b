@@ -7,6 +7,16 @@
  * and 3D tensor operations. The implementation uses Armadillo's fcube (float
  * cube) as the underlying storage backend, providing efficient memory
  * management and mathematical operations.
+ * 
+ * ## Tensor Memory Layout
+ * 
+ * The tensor uses row-major ordering for element storage. For a 3D tensor with
+ * shape @f$ (C, H, W) @f$ (channels, rows, columns), the linear index is computed as:
+ * @f[
+ * \text{index} = c \times (H \times W) + r \times W + col
+ * @f]
+ * where @f$ c @f$ is the channel index, @f$ r @f$ is the row index, and @f$ col @f$ is the column index.
+ * 
  * @date 2026-03-11 21:28:30
  */
 

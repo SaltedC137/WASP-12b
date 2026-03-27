@@ -24,8 +24,11 @@ namespace ctl {
  * @brief Compute the Euclidean norm (L2 norm) of a tensor
  * @param tensor The input tensor
  * @return float The Euclidean norm value
- * @details Computes ||tensor||_2 = sqrt(sum(x_i^2)), which is the standard
- *          Euclidean length of the tensor when viewed as a vector.
+ * @details Computes the L2 norm (Euclidean length):
+ * @f[
+ * \|\text{tensor}\|_2 = \sqrt{\sum_i x_i^2}
+ * @f]
+ * This is the standard Euclidean distance from the origin.
  */
 float Euclidean_norm(const ften &tensor);
 
@@ -33,8 +36,11 @@ float Euclidean_norm(const ften &tensor);
  * @brief Compute the L1 norm (absolute value norm) of a tensor
  * @param tensor The input tensor
  * @return float The L1 norm value
- * @details Computes ||tensor||_1 = sum(|x_i|), which is the sum of absolute
- *          values of all elements in the tensor.
+ * @details Computes the L1 norm (sum of absolute values):
+ * @f[
+ * \|\text{tensor}\|_1 = \sum_i |x_i|
+ * @f]
+ * Also known as the Manhattan norm or taxicab norm.
  */
 float Absolute_value_norm(const ften &tensor);
 
@@ -43,8 +49,11 @@ float Absolute_value_norm(const ften &tensor);
  * @param tensor1 The first input tensor
  * @param tensor2 The second input tensor
  * @return float The inner product value
- * @details Computes the sum of element-wise products: sum(x_i * y_i).
- *          Both input tensors must have the same shape.
+ * @details Computes the inner (dot) product:
+ * @f[
+ * \text{tensor1} \cdot \text{tensor2} = \sum_i \text{tensor1}_i \times \text{tensor2}_i
+ * @f]
+ * Both input tensors must have the same shape.
  */
 float Transvection(const ften &tensor1, const ften &tensor2);
 
@@ -52,22 +61,30 @@ float Transvection(const ften &tensor1, const ften &tensor2);
  * @brief Compute the batch determinant of square matrices
  * @param tensor The input tensor (must be square matrices with multiple channels)
  * @param output Reference to the output tensor storing determinant values for each channel
- * @details Computes det(tensor) for each channel in parallel. The input tensor
- *          must have shape (rows, rows, channels) where rows == cols for each slice.
- *          Output tensor should have size equal to the number of channels.
- *          Uses OpenMP for parallel processing when channels > 1.
+ * @details Computes the determinant for each channel:
+ * @f[
+ * \text{output}_k = \det(A_k)
+ * @f]
+ * where @f$ A_k @f$ is the k-th channel (square matrix).
+ * For a 2×2 matrix:
+ * @f[
+ * \det\begin{pmatrix} a & b \\ c & d \end{pmatrix} = ad - bc
+ * @f]
+ * Uses OpenMP for parallel processing when channels > 1.
  * @warning The input tensor must represent square matrices (rows == cols).
  */
 void Batch_Determinant(const ften &tensor, ften &output);
 
 /**
- * @brief Compute the trace of square matrices in batch
+ * @brief Compute the batch trace of square matrices in batch
  * @param tensor The input tensor (must be square matrices with multiple channels)
  * @param output Reference to the output tensor storing trace values for each channel
- * @details Computes trace(tensor) for each channel in parallel. The input tensor
- *          must have shape (rows, rows, channels) where rows == cols for each slice.
- *          Output tensor should have size equal to the number of channels.
- *          Uses OpenMP for parallel processing when channels > 1.
+ * @details Computes the trace (sum of diagonal elements) for each channel:
+ * @f[
+ * \text{output}_k = \text{tr}(A_k) = \sum_i (A_k)_{ii}
+ * @f]
+ * where @f$ A_k @f$ is the k-th channel (square matrix).
+ * Uses OpenMP for parallel processing when channels > 1.
  * @warning The input tensor must represent square matrices (rows == cols).
  */
 void Batch_Trace(const ften &tensor, ften &output);
@@ -77,8 +94,11 @@ void Batch_Trace(const ften &tensor, ften &output);
  * @param tensor1 The first input tensor
  * @param tensor2 The second input tensor
  * @param output Reference to the output tensor storing the result
- * @details Computes the outer product, producing a matrix where
- *          output[i,j] = tensor1[i] * tensor2[j].
+ * @details Computes the outer product, producing a matrix:
+ * @f[
+ * \text{output}_{ij} = \text{tensor1}_i \otimes \text{tensor2}_j = \text{tensor1}_i \times \text{tensor2}_j
+ * @f]
+ * If tensor1 has size m and tensor2 has size n, output is an m×n matrix.
  */
 void Outer_product(const ften &tensor1, const ften &tensor2, ften &output);
 
@@ -86,11 +106,13 @@ void Outer_product(const ften &tensor1, const ften &tensor2, ften &output);
  * @brief Compute the inverse of square matrices in batch
  * @param tensor The input tensor (must be invertible square matrices with multiple channels)
  * @param output Reference to the output tensor storing inverse matrices for each channel
- * @details Computes tensor^(-1) for each channel in parallel such that tensor · tensor^(-1) = I.
- *          The input tensor must have shape (rows, rows, channels) where rows == cols for each slice.
- *          Output tensor should have the same shape as the input tensor.
- *          Uses OpenMP for parallel processing when channels > 1.
- * @warning The input tensor must be non-singular square matrices.
+ * @details Computes the matrix inverse for each channel:
+ * @f[
+ * \text{output}_k = A_k^{-1}, \quad \text{where } A_k \times A_k^{-1} = I
+ * @f]
+ * where @f$ I @f$ is the identity matrix.
+ * Uses OpenMP for parallel processing when channels > 1.
+ * @warning The input tensor must be non-singular (determinant ≠ 0).
  */
 void Batch_Inverse(const ften &tensor, ften &output);
 
@@ -98,10 +120,11 @@ void Batch_Inverse(const ften &tensor, ften &output);
  * @brief Compute the transpose of matrices in batch
  * @param tensor The input tensor
  * @param output Reference to the output tensor storing the transposed result
- * @details Computes tensor^T for each channel in parallel, swapping rows and columns.
- *          For a matrix A, output[i,j] = A[j,i]. The output tensor must have
- *          shape (cols, rows, channels) if input is (rows, cols, channels).
- *          Uses OpenMP for parallel processing when channels > 1.
+ * @details Computes the matrix transpose for each channel:
+ * @f[
+ * \text{output}_k = A_k^T, \quad \text{where } (A_k^T)_{ij} = (A_k)_{ji}
+ * @f]
+ * Rows and columns are swapped. Uses OpenMP for parallel processing when channels > 1.
  */
 void Transposition(const ften &tensor, ften &output);
 

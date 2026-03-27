@@ -23,8 +23,11 @@ namespace ctl {
  * @param tensor1 The first input tensor
  * @param tensor2 The second input tensor
  * @param output Reference to the output tensor storing the result
- * @details Computes output = tensor1 + tensor2 element-wise.
- *          Both input tensors must have the same shape.
+ * @details Computes element-wise addition:
+ * @f[
+ * \text{output}_i = \text{tensor1}_i + \text{tensor2}_i
+ * @f]
+ * Both input tensors must have the same shape.
  */
 void ElementAdd(const ften &tensor1, const ften &tensor2, ften &output); // +
 
@@ -33,8 +36,11 @@ void ElementAdd(const ften &tensor1, const ften &tensor2, ften &output); // +
  * @param tensor1 The first input tensor
  * @param tensor2 The second input tensor
  * @param output Reference to the output tensor storing the result
- * @details Computes output = tensor1 * tensor2 element-wise.
- *          Both input tensors must have the same shape.
+ * @details Computes the Hadamard (element-wise) product:
+ * @f[
+ * \text{output}_i = \text{tensor1}_i \odot \text{tensor2}_i = \text{tensor1}_i \times \text{tensor2}_i
+ * @f]
+ * Both input tensors must have the same shape.
  */
 void ElementMultiply(const ften &tensor1, const ften &tensor2,
                      ften &output); // *
@@ -44,9 +50,12 @@ void ElementMultiply(const ften &tensor1, const ften &tensor2,
  * @param tensor1 The first input tensor (left operand)
  * @param tensor2 The second input tensor (right operand)
  * @param output Reference to the output tensor storing the result
- * @details Performs matrix multiplication output = tensor1 · tensor2.
- *          For 2D tensors, this is standard matrix multiplication.
- *          For higher-dimensional tensors, operation is applied per batch.
+ * @details Performs matrix multiplication. For 2D tensors (matrices) @f$ A @f$ and @f$ B @f$:
+ * @f[
+ * \text{output} = A \times B, \quad \text{output}_{ij} = \sum_k A_{ik} B_{kj}
+ * @f]
+ * For higher-dimensional tensors, the operation is applied per batch/channel.
+ * The number of columns in tensor1 must equal the number of rows in tensor2.
  */
 void Matmul(const ften &tensor1, const ften &tensor2, ften &output); // .
 
@@ -55,8 +64,11 @@ void Matmul(const ften &tensor1, const ften &tensor2, ften &output); // .
  * @param tensor1 The first input tensor (minuend)
  * @param tensor2 The second input tensor (subtrahend)
  * @param output Reference to the output tensor storing the result
- * @details Computes output = tensor1 - tensor2 element-wise.
- *          Both input tensors must have the same shape.
+ * @details Computes element-wise subtraction:
+ * @f[
+ * \text{output}_i = \text{tensor1}_i - \text{tensor2}_i
+ * @f]
+ * Both input tensors must have the same shape.
  */
 void ElementSub(const ften &tensor1, const ften &tensor2, ften &output); // -
 
@@ -65,9 +77,12 @@ void ElementSub(const ften &tensor1, const ften &tensor2, ften &output); // -
  * @param tensor1 The numerator tensor
  * @param tensor2 The denominator tensor
  * @param output Reference to the output tensor storing the result
- * @details Computes output = tensor1 / tensor2 element-wise.
- *          Both input tensors must have the same shape.
- *          @warning Division by zero is not handled - caller must ensure
+ * @details Computes element-wise division:
+ * @f[
+ * \text{output}_i = \frac{\text{tensor1}_i}{\text{tensor2}_i}
+ * @f]
+ * Both input tensors must have the same shape.
+ * @warning Division by zero is not handled - caller must ensure
  *          tensor2 contains no zero elements.
  */
 void ElementDivide(const ften &tensor1, const ften &tensor2, ften &output); // /
@@ -79,7 +94,11 @@ void ElementDivide(const ften &tensor1, const ften &tensor2, ften &output); // /
  * @param tensor The input tensor
  * @param scalar The scalar value to add
  * @param output Reference to the output tensor storing the result
- * @details Computes output = tensor + scalar element-wise.
+ * @details Computes element-wise scalar addition:
+ * @f[
+ * \text{output}_i = \text{tensor}_i + c
+ * @f]
+ * where @f$ c @f$ is the scalar value.
  */
 void AddScalar(const ften &tensor, float scalar, ften &output);
 
@@ -88,7 +107,11 @@ void AddScalar(const ften &tensor, float scalar, ften &output);
  * @param tensor The input tensor
  * @param scalar The scalar multiplier
  * @param output Reference to the output tensor storing the result
- * @details Computes output = tensor * scalar element-wise.
+ * @details Computes element-wise scalar multiplication:
+ * @f[
+ * \text{output}_i = c \times \text{tensor}_i
+ * @f]
+ * where @f$ c @f$ is the scalar multiplier.
  */
 void MultiplyScalar(const ften &tensor, float scalar, ften &output);
 
@@ -97,8 +120,12 @@ void MultiplyScalar(const ften &tensor, float scalar, ften &output);
  * @param tensor The input tensor
  * @param scalar The scalar divisor
  * @param output Reference to the output tensor storing the result
- * @details Computes output = tensor / scalar element-wise.
- *          @warning Caller must ensure scalar is non-zero.
+ * @details Computes element-wise scalar division:
+ * @f[
+ * \text{output}_i = \frac{\text{tensor}_i}{c}
+ * @f]
+ * where @f$ c @f$ is the scalar divisor.
+ * @warning Caller must ensure scalar is non-zero.
  */
 void DivideScalar(const ften &tensor, float scalar, ften &output);
 
@@ -107,7 +134,11 @@ void DivideScalar(const ften &tensor, float scalar, ften &output);
  * @param tensor The input tensor
  * @param scalar The scalar value to subtract
  * @param output Reference to the output tensor storing the result
- * @details Computes output = tensor - scalar element-wise.
+ * @details Computes element-wise scalar subtraction:
+ * @f[
+ * \text{output}_i = \text{tensor}_i - c
+ * @f]
+ * where @f$ c @f$ is the scalar value.
  */
 void SubScalar(const ften &tensor, float scalar, ften &output);
 
@@ -115,8 +146,11 @@ void SubScalar(const ften &tensor, float scalar, ften &output);
  * @brief Apply exponential function to each element of a tensor
  * @param tensor The input tensor
  * @param output Reference to the output tensor storing the result
- * @details Computes output = exp(tensor) element-wise, where exp is the
- *          natural exponential function (e^x).
+ * @details Computes the natural exponential element-wise:
+ * @f[
+ * \text{output}_i = e^{\text{tensor}_i}
+ * @f]
+ * where @f$ e \approx 2.71828 @f$ is Euler's number.
  */
 void ElementExp(const ften &tensor, ften &output);
 
@@ -126,9 +160,12 @@ void ElementExp(const ften &tensor, ften &output);
  * @param min_val The minimum value (lower bound)
  * @param max_val The maximum value (upper bound)
  * @param output Reference to the output tensor storing the result
- * @details Clips each element to the range [min_val, max_val].
- *          Elements less than min_val are set to min_val.
- *          Elements greater than max_val are set to max_val.
+ * @details Clips each element to the range @f$ [\text{min\_val}, \text{max\_val}] @f$:
+ * @f[
+ * \text{output}_i = \min(\max(\text{tensor}_i, \text{min\_val}), \text{max\_val})
+ * @f]
+ * Elements less than min_val are set to min_val.
+ * Elements greater than max_val are set to max_val.
  */
 void ElementClip(const ften &tensor, float min_val, float max_val,
                  ften &output);

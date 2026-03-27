@@ -62,7 +62,7 @@ GENERATE_XML         = NO
 GENERATE_RTF         = NO
 GENERATE_MAN         = NO
 GENERATE_LATEX       = NO
-
+USE_MATHJAX          = YES
 
 WARNINGS               = YES
 WARN_IF_UNDOCUMENTED   = NO
