@@ -8,8 +8,11 @@
 #include "tensor.hpp"
 #include <algorithm>
 #include <cstdint>
+#include <functional>
 #include <immintrin.h>
+#include <limits>
 #include <memory>
+#include <numeric>
 #include <vector>
 
 namespace ctl {
@@ -130,9 +133,29 @@ SoftmaxLayer::Forward(const std::vector<std::shared_ptr<ften>> &inputs,
         raw_shapes.push_back(1);
       }
 
+      // trans dim
+      // input
+      const uint32_t inner_sizes = std::accumulate(
+          raw_shapes.begin() + dim + 1, raw_shapes.end(), 1, std::multiplies());
+
+      // output
+
+      const uint32_t outer_sizes = std::accumulate(
+          raw_shapes.begin(), raw_shapes.begin() + dim, 1, std::multiplies());
+
+      int32_t axis_sizes = static_cast<int32_t>(raw_shapes.at(dim));
+      CHECK_EQ(axis_sizes * outer_sizes * inner_sizes, input->size());
+      std::vector<float> output_values = input->values(true);
+
+#pragma omp parallel for collapse(2)
+      for (int32_t outer_size = 0; outer_size < outer_sizes; outer_size++) {
+        for (int32_t inner_size = 0; inner_size < inner_sizes; inner_size++) {
+          float max_val = std::numeric_limits<float>::lowest();
 
 
-      
+          
+        }
+      }
     }
   }
   return StatusCode::Success;
