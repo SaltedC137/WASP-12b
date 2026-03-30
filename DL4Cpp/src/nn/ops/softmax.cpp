@@ -152,12 +152,91 @@ SoftmaxLayer::Forward(const std::vector<std::shared_ptr<ften>> &inputs,
         for (int32_t inner_size = 0; inner_size < inner_sizes; inner_size++) {
           float max_val = std::numeric_limits<float>::lowest();
 
+          uint32_t base_index =
+              outer_size * axis_sizes * inner_sizes + inner_size;
 
-          
+          std::vector<float> tmp_storage(axis_sizes);
+          for (uint32_t axis_size = 0; axis_size < axis_sizes; axis_size++) {
+            uint32_t index = base_index + axis_size * inner_sizes;
+            float cur_val = output_values.at(index);
+            if (cur_val > max_val) {
+              max_val = cur_val;
+            }
+            tmp_storage.at(axis_size) = cur_val;
+          }
+
+          float sum_value = 0.f;
+          int32_t axis_size = 0;
+
+#ifdef __AVX2__
+
+          int32_t packet_size = 8;
+          float *tmp_storage_ptr = tmp_storage.data();
+          __m256 sum_vec = _mm256_setzero_ps();
+          __m256 max_value256 = _mm256_set1_ps(max_val);
+          for (; axis_size <= axis_sizes - packet_size;
+               axis_size += packet_size) {
+            __m256 p = _mm256_loadu_ps(tmp_storage_ptr);
+            __m256 exp_sub_value =
+                fmath::exp_ps256(_mm256_sub_ps(p, max_value256));
+            _mm256_storeu_ps(tmp_storage_ptr, exp_sub_value);
+            sum_vec = _mm256_add_ps(sum_vec, exp_sub_value);
+            tmp_storage_ptr += packet_size;
+          }
+          sum_vec = _mm256_hadd_ps(sum_vec, sum_vec);
+          sum_vec = _mm256_hadd_ps(sum_vec, sum_vec);
+          sum_value = ((float *)&sum_vec)[0] + ((float *)&sum_vec)[4];
+#endif
+          for (; axis_size < axis_sizes; ++axis_size) {
+            float cur_val = tmp_storage.at(axis_size);
+            float exp_sub_value = fmath::exp(cur_val - max_val);
+            sum_value += exp_sub_value;
+            tmp_storage.at(axis_size) = exp_sub_value;
+          }
+
+#ifdef __AVX2__
+
+          tmp_storage_ptr = tmp_storage.data();
+          sum_vec = _mm256_set1_ps(sum_value);
+          for (axis_size = 0; axis_size <= axis_sizes - packet_size;
+               axis_size += packet_size) {
+            __m256 p = _mm256_loadu_ps(tmp_storage_ptr);
+            __m256 div_value = _mm256_div_ps(p, sum_vec);
+            _mm256_storeu_ps(tmp_storage_ptr, div_value);
+            tmp_storage_ptr += packet_size;
+          }
+#endif
+
+          for (; axis_size < axis_sizes; ++axis_size) {
+            tmp_storage.at(axis_size) = tmp_storage.at(axis_size) / sum_value;
+          }
+          for (axis_size = 0; axis_size < axis_sizes; ++axis_size) {
+            uint32_t index = base_index + axis_size * inner_sizes;
+            float div_value = tmp_storage.at(axis_size);
+            output_values.at(index) = div_value;
+          }
         }
       }
+      output->Fill(output_values, true);
     }
   }
+  return StatusCode::Success;
+}
+
+StatusCode
+SoftmaxLayer::CreateInstance(const std::shared_ptr<RuntimeOperator> &op,
+                             std::shared_ptr<Layer<float>> &softmax_layer) {
+  if (!op) {
+    LOG(ERROR) << "SoftmaxLayer::CreateInstance: op is nullptr";
+    return StatusCode::ParseNullOperator;
+  }
+  const auto &params = op->param;
+
+  auto dim_param = params.at("dim");
+
+  auto dim = std::dynamic_pointer_cast<RuntimeParameterInt>(dim_param);
+
+  softmax_layer = std::make_shared<SoftmaxLayer>(dim->value); // 创建softmax层
   return StatusCode::Success;
 }
 
