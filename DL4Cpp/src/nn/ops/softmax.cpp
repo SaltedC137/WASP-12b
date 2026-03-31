@@ -3,6 +3,7 @@
 #include "softmax.hpp"
 #include "check.hpp"
 #include "fmath.hpp"
+#include "layer_factory.hpp"
 #include "log.hpp"
 #include "rt_type.hpp"
 #include "tensor.hpp"
@@ -40,7 +41,7 @@ SoftmaxLayer::Forward(const std::vector<std::shared_ptr<ften>> &inputs,
 #pragma omp parallel for num_threads(batch_size)
   for (uint32_t i = 0; i < batch_size; i++) {
     const std::shared_ptr<ften> &input = inputs.at(i);
-    CHECK(input != nullptr && input->empty())
+    CHECK(input != nullptr && !input->empty())
         << "The input tensor array in the softmax layer has an empty tensor "
         << i << " th";
 
@@ -231,14 +232,28 @@ SoftmaxLayer::CreateInstance(const std::shared_ptr<RuntimeOperator> &op,
     return StatusCode::ParseNullOperator;
   }
   const auto &params = op->param;
-
+  if (params.empty()) {
+    LOG(ERROR) << "SoftmaxLayer::CreateInstance: params is empty";
+    return StatusCode::ParseParamError;
+  }
+  if (params.find("dim") == params.end()) {
+    return StatusCode::ParseParamError;
+  }
   auto dim_param = params.at("dim");
 
   auto dim = std::dynamic_pointer_cast<RuntimeParameterInt>(dim_param);
-
+    if (dim == nullptr) {
+    return StatusCode::ParseParamError;
+  }
   softmax_layer = std::make_shared<SoftmaxLayer>(dim->value); // 创建softmax层
+
+
   return StatusCode::Success;
 }
+
+LayerRegisterWrapper SoftMaxCreateInstanceNN(SoftmaxLayer::CreateInstance, "F.softmax",
+                                                "nn.Softmax");
+
 
 } // namespace nn
 } // namespace ctl
