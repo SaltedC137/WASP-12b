@@ -18,7 +18,8 @@ class ReLU : public nn::ActivationLayer {
 public:
   explicit ReLU();
   
-
+  
+StatusCode Forward(const Tensor& input, Tensor& output) override;
 
 };
 
