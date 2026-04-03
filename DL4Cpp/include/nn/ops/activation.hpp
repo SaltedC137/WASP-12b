@@ -105,7 +105,7 @@ public:
    * implementations when available.
    */
   StatusCode Forward(const std::vector<std::shared_ptr<ften>> &inputs,
-                     std::vector<std::shared_ptr<ften>> outputs) override;
+                     std::vector<std::shared_ptr<ften>> &outputs) override;
 
 private:
   ActivationType activation_type_ = ActivationType::ActivationType_None; ///< Type of activation function

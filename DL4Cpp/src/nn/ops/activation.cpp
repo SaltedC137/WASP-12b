@@ -76,7 +76,7 @@ StatusCode ActivationLayer::Check(const std::vector<sften> &inputs,
 
 StatusCode
 ActivationLayer::Forward(const std::vector<std::shared_ptr<ften>> &inputs,
-                         std::vector<std::shared_ptr<ften>> outputs) {
+                         std::vector<std::shared_ptr<ften>> &outputs) {
   StatusCode check_status = Check(inputs, outputs);
   if (check_status != StatusCode::Success) {
     return check_status;

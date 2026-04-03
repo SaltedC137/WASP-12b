@@ -60,6 +60,12 @@ static void SigmoidSSE(sften input, sften output) {
   }
 }
 
+
+void Sigmoid::operator()(const sften& input, const sften& output) const {
+  SigmoidSSE(input, output);
+}
+
+
 ActivationFunc ApplySSEActivation(ActivationType act_type) {
   ActivationFunc function;
   switch (act_type) {

@@ -1,5 +1,3 @@
-
-
 #include "nn/layer.hpp"
 #include "runtime/rt_op.hpp"
 #include "runtime/rt_opd.hpp"
@@ -47,7 +45,7 @@ void Layer<float>::set_weight(
 
 StatusCode
 Layer<float>::Forward(const std::vector<std::shared_ptr<Tensor<float>>> &inputs,
-                      std::vector<std::shared_ptr<Tensor<float>>> outputs) {
+                      std::vector<std::shared_ptr<Tensor<float>>> &outputs) {
   LOG(FATAL) << this->layer_name_ << "layer not complement yet!";
   return StatusCode::FunctionNotImplement;
 }

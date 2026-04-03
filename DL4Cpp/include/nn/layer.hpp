@@ -92,7 +92,7 @@ public:
    */
   virtual StatusCode
   Forward(const std::vector<std::shared_ptr<Tensor<float>>> &inputs,
-          std::vector < std::shared_ptr<Tensor<float>>> outputs);
+          std::vector < std::shared_ptr<Tensor<float>>> &outputs);
 
 
   /**

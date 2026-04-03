@@ -54,7 +54,7 @@ public:
    * allocated.
    */
   StatusCode Forward(const std::vector<std::shared_ptr<ften>> &inputs,
-                     std::vector<std::shared_ptr<ften>> outputs) override;
+                     std::vector<std::shared_ptr<ften>> &outputs) override;
 
   /**
    * @brief Create a SoftmaxLayer instance from a runtime operator

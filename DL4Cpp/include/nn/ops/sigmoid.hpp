@@ -14,19 +14,38 @@
 #define SIGMOID_HPP
 
 #include "activation.hpp"
+#include "rt_type.hpp"
+#include "tensor.hpp"
+#include <memory>
+#include <vector>
 
 namespace ctl {
 namespace nn {
 
+class Sigmoid {
+public:
+  void operator()(const sften &input, const sften &output) const;
+};
+
+class SigmoidLayer : public ActivationLayer {
+
+public:
+  explicit SigmoidLayer();
+
+  StatusCode Forward(const std::vector<std::shared_ptr<ften>> &inputs,
+                     std::vector<std::shared_ptr<ften>> &outputs) override;
+
+  static StatusCode
+  CreateInstance(const std::shared_ptr<RuntimeOperator> &op,
+                 std::shared_ptr<Layer<float>> &sigmoid_layer);
+};
+
 /**
- * @brief Get the SSE-optimized activation function for a given type
+ * @brief Legacy factory function for dynamic activation selection
  * @param act_type The type of activation function to retrieve
  * @return ActivationFunc Function object for the specified activation type
- * @details Returns a std::function that wraps the SSE-optimized implementation
- * of the specified activation function. Currently supports Sigmoid activation.
- * The returned function can be used to apply the activation element-wise to
- * input tensors with SIMD acceleration for improved performance.
- * @note For Sigmoid, the function computes: @f$ \sigma(x) = \frac{1}{1 + e^{-x}} @f$
+ * @deprecated Use Sigmoid functor directly for better performance and
+ * simplicity
  */
 ActivationFunc ApplySSEActivation(ActivationType act_type);
 

@@ -24,7 +24,7 @@ SoftmaxLayer::SoftmaxLayer(int32_t dim)
 
 StatusCode
 SoftmaxLayer::Forward(const std::vector<std::shared_ptr<ften>> &inputs,
-                      std::vector<std::shared_ptr<ften>> outputs) {
+                      std::vector<std::shared_ptr<ften>> &outputs) {
   if (inputs.empty()) {
     LOG(ERROR) << "SoftmaxLayer::Forward: inputs is empty";
     return StatusCode::InferInputsEmpty;
@@ -245,7 +245,7 @@ SoftmaxLayer::CreateInstance(const std::shared_ptr<RuntimeOperator> &op,
     if (dim == nullptr) {
     return StatusCode::ParseParamError;
   }
-  softmax_layer = std::make_shared<SoftmaxLayer>(dim->value); // 创建softmax层
+  softmax_layer = std::make_shared<SoftmaxLayer>(dim->value); // NOLINT
 
 
   return StatusCode::Success;
