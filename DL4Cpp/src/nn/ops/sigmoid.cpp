@@ -2,8 +2,10 @@
 
 #include "nn/ops/sigmoid.hpp"
 #include "check.hpp"
+#include "layer_factory.hpp"
 #include "log.hpp"
 #include "nn/ops/activation.hpp"
+#include "rt_type.hpp"
 #include "utils/fmath.hpp"
 #include <cstdint>
 #include <immintrin.h>
@@ -60,11 +62,31 @@ static void SigmoidSSE(sften input, sften output) {
   }
 }
 
-
-void Sigmoid::operator()(const sften& input, const sften& output) const {
+void Sigmoid::operator()(const sften &input, const sften &output) const {
   SigmoidSSE(input, output);
 }
 
+SigmoidLayer::SigmoidLayer()
+    : ActivationLayer(ActivationType::ActivationSigmoid, "nn.Sigmoid") {}
+
+StatusCode
+SigmoidLayer::Forward(const std::vector<std::shared_ptr<ften>> &inputs,
+                      std::vector<std::shared_ptr<ften>> &outputs) {
+  return ActivationLayer::Forward(inputs, outputs);
+}
+
+StatusCode
+SigmoidLayer::CreateInstance(const std::shared_ptr<RuntimeOperator> &op,
+                             std::shared_ptr<Layer<float>> &sigmoid_layer) {
+  if (!op) {
+    LOG(ERROR) << "Runtime operator is null";
+    return StatusCode::ParseNullOperator;
+  }
+  sigmoid_layer = std::make_shared<SigmoidLayer>();
+  return StatusCode::Success;
+}
+LayerRegisterWrapper SigmoidCreateInstance(SigmoidLayer::CreateInstance,
+                                           "nn.Sigmoid");
 
 ActivationFunc ApplySSEActivation(ActivationType act_type) {
   ActivationFunc function;
