@@ -30,6 +30,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Subdirectories
 add_subdirectory("DL4Cpp")
+add_subdirectory("DL4Cpp/net")
 
 option(DL4CPP_BUILD_DOCS "Build Doxygen documentation" OFF)
 

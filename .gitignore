@@ -57,6 +57,10 @@ venv/
 .venv/
 ENV/
 env/
+*.pt
+*.pth
+*.pnnx.*
+*.ncnn.*
 
 # C/C++
 *.d
