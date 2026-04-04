@@ -13,7 +13,7 @@
 namespace ctl {
 namespace nn {
 
-static void SigmoidSSE(sften input, sften output) {
+static void SigmoidAVX2(sften input, sften output) {
   CHECK(input != nullptr && output != nullptr) << "Tensor is null";
   CHECK(!input->empty() && !output->empty()) << "Tensor is empty";
   CHECK(input->size() == output->size()) << "Tensor size not match";
@@ -62,8 +62,8 @@ static void SigmoidSSE(sften input, sften output) {
   }
 }
 
-void Sigmoid::operator()(const sften &input, const sften &output) const {
-  SigmoidSSE(input, output);
+void Sigmoid::operator()(const sften &input, sften &output) const {
+  SigmoidAVX2(input, output);
 }
 
 SigmoidLayer::SigmoidLayer()
@@ -87,20 +87,6 @@ SigmoidLayer::CreateInstance(const std::shared_ptr<RuntimeOperator> &op,
 }
 LayerRegisterWrapper SigmoidCreateInstance(SigmoidLayer::CreateInstance,
                                            "nn.Sigmoid");
-
-ActivationFunc ApplySSEActivation(ActivationType act_type) {
-  ActivationFunc function;
-  switch (act_type) {
-  case ActivationType::ActivationSigmoid: {
-    function = SigmoidSSE;
-    return function;
-  }
-  default: {
-    LOG(FATAL) << "Unknown SSE activation type: " << int32_t(act_type);
-  }
-  }
-  return function;
-}
 
 } // namespace nn
 } // namespace ctl

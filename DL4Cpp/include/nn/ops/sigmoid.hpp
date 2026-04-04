@@ -41,7 +41,7 @@ public:
    * @details Computes @f$ \text{output}_i = \frac{1}{1 + e^{-\text{input}_i}} @f$
    *          using SIMD instructions for accelerated computation.
    */
-  void operator()(const sften &input, const sften &output) const;
+  void operator()(const sften &input, sften &output) const;
 };
 
 /**
@@ -82,15 +82,6 @@ public:
   CreateInstance(const std::shared_ptr<RuntimeOperator> &op,
                  std::shared_ptr<Layer<float>> &sigmoid_layer);
 };
-
-/**
- * @brief Legacy factory function for dynamic activation selection
- * @param act_type The type of activation function to retrieve
- * @return ActivationFunc Function object for the specified activation type
- * @deprecated Use Sigmoid functor directly for better performance and
- * simplicity
- */
-ActivationFunc ApplySSEActivation(ActivationType act_type);
 
 } // namespace nn
 } // namespace ctl

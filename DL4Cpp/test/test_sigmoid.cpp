@@ -96,8 +96,8 @@ void TestSigmoid_SingleElement() {
   std::vector<float> values = {0.0f};
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   float expected = ReferenceSigmoid(0.0f); // 0.5
   CHECK(FloatEq(output->at(0, 0, 0), expected));
@@ -114,8 +114,8 @@ void TestSigmoid_PositiveValues() {
   std::vector<float> values = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f};
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   for (int i = 0; i < 5; ++i) {
     float expected = ReferenceSigmoid(values[i]);
@@ -136,8 +136,8 @@ void TestSigmoid_NegativeValues() {
   std::vector<float> values = {-4.0f, -3.0f, -2.0f, -1.0f, 0.0f};
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   for (int i = 0; i < 5; ++i) {
     float expected = ReferenceSigmoid(values[i]);
@@ -159,8 +159,8 @@ void TestSigmoid_LargeValues() {
   std::vector<float> values = {-100.0f, -50.0f, -10.0f, 10.0f, 50.0f, 100.0f};
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   // Check large negative values approach 0
   CHECK(FloatEq(output->index(0), 0.0f, 1e-4f));
@@ -195,8 +195,8 @@ void TestSigmoid_2DTensor() {
   };
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   for (int i = 0; i < 16; ++i) {
     float expected = ReferenceSigmoid(values[i]);
@@ -218,8 +218,8 @@ void TestSigmoid_3DTensor() {
   }
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   for (int i = 0; i < 24; ++i) {
     float expected = ReferenceSigmoid(values[i]);
@@ -237,8 +237,8 @@ void TestSigmoid_RandomValues() {
 
   input->Rand(); // Fill with random values in [0, 1)
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   // Verify all outputs are in (0, 1)
   const float* out_ptr = output->raw_ptr();
@@ -263,8 +263,8 @@ void TestSigmoid_InPlace() {
   tensor->Fill(values, false);
 
   // Use same tensor for input and output
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(tensor, tensor);
+  Sigmoid sigmoid;
+  sigmoid(tensor, tensor);
 
   for (int i = 0; i < 8; ++i) {
     float expected = ReferenceSigmoid(values[i]);
@@ -297,8 +297,8 @@ void TestSigmoid_BatchProcessing() {
   }
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   for (int i = 0; i < 64; ++i) {
     float expected = ReferenceSigmoid(values[i]);
@@ -318,8 +318,8 @@ void TestSigmoid_SpecialValues() {
   std::vector<float> values = {-2.0f, -1.0f, 1.0f, 2.0f};
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   // sigmoid(-2) should equal 1 - sigmoid(2)
   float sig_neg2 = output->index(0);
@@ -347,8 +347,8 @@ void TestSigmoid_LargeTensor() {
   }
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   int pass_count = 0;
   for (int i = 0; i < 1024; ++i) {
@@ -376,8 +376,8 @@ void TestSigmoid_VeryLargeTensor() {
   }
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   int pass_count = 0;
   for (int i = 0; i < 16384; ++i) {
@@ -402,10 +402,10 @@ void BenchmarkSigmoid_SmallTensor() {
   auto output = std::make_shared<Tensor<float>>(32, 32);
   input->Rand();
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+  Sigmoid sigmoid;
 
   double avg_time = BenchmarkFunction([&]() {
-    activation_func(input, output);
+    sigmoid(input, output);
   }, 100);
 
   PrintBenchmarkResult("Sigmoid 32x32", avg_time, 32 * 32);
@@ -418,10 +418,10 @@ void BenchmarkSigmoid_MediumTensor() {
   auto output = std::make_shared<Tensor<float>>(128, 128);
   input->Rand();
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+  Sigmoid sigmoid;
 
   double avg_time = BenchmarkFunction([&]() {
-    activation_func(input, output);
+    sigmoid(input, output);
   }, 50);
 
   PrintBenchmarkResult("Sigmoid 128x128", avg_time, 128 * 128);
@@ -434,10 +434,10 @@ void BenchmarkSigmoid_LargeTensor() {
   auto output = std::make_shared<Tensor<float>>(256, 256);
   input->Rand();
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+  Sigmoid sigmoid;
 
   double avg_time = BenchmarkFunction([&]() {
-    activation_func(input, output);
+    sigmoid(input, output);
   }, 30);
 
   PrintBenchmarkResult("Sigmoid 256x256", avg_time, 256 * 256);
@@ -450,10 +450,10 @@ void BenchmarkSigmoid_VeryLargeTensor() {
   auto output = std::make_shared<Tensor<float>>(512, 512);
   input->Rand();
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+  Sigmoid sigmoid;
 
   double avg_time = BenchmarkFunction([&]() {
-    activation_func(input, output);
+    sigmoid(input, output);
   }, 10);
 
   PrintBenchmarkResult("Sigmoid 512x512", avg_time, 512 * 512);
@@ -466,10 +466,10 @@ void BenchmarkSigmoid_3DTensor() {
   auto output = std::make_shared<Tensor<float>>(8, 128, 128);
   input->Rand();
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+  Sigmoid sigmoid;
 
   double avg_time = BenchmarkFunction([&]() {
-    activation_func(input, output);
+    sigmoid(input, output);
   }, 20);
 
   PrintBenchmarkResult("Sigmoid 8x128x128", avg_time, 8 * 128 * 128);
@@ -487,11 +487,11 @@ void BenchmarkSigmoid_BatchProcessing() {
     inputs[i]->Rand();
   }
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+  Sigmoid sigmoid;
 
   double avg_time = BenchmarkFunction([&]() {
     for (int i = 0; i < 16; ++i) {
-      activation_func(inputs[i], outputs[i]);
+      sigmoid(inputs[i], outputs[i]);
     }
   }, 50);
 
@@ -505,10 +505,10 @@ void BenchmarkSigmoid_Deep3DTensor() {
   auto output = std::make_shared<Tensor<float>>(32, 64, 64);
   input->Rand();
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+  Sigmoid sigmoid;
 
   double avg_time = BenchmarkFunction([&]() {
-    activation_func(input, output);
+    sigmoid(input, output);
   }, 20);
 
   PrintBenchmarkResult("Sigmoid 32x64x64", avg_time, 32 * 64 * 64);
@@ -522,10 +522,10 @@ void BenchmarkSigmoid_ImageNet() {
   auto output = std::make_shared<Tensor<float>>(3, 2240, 2240);
   input->Rand();
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
+  Sigmoid sigmoid;
 
   double avg_time = BenchmarkFunction([&]() {
-    activation_func(input, output);
+    sigmoid(input, output);
   }, 10);
 
   PrintBenchmarkResult("Sigmoid 3x2240x2240 (ImageNet)", avg_time, 3 * 2240 * 2240);
@@ -543,8 +543,8 @@ void TestSigmoid_Deep3DTensor() {
   }
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   int pass_count = 0;
   for (int i = 0; i < 512; ++i) {
@@ -570,8 +570,8 @@ void TestSigmoid_OutputRange() {
   std::vector<float> values = {-1000.0f, -100.0f, -10.0f, -1.0f, 0.0f, 1.0f, 10.0f, 100.0f, 1000.0f, 0.5f};
   input->Fill(values, false);
 
-  auto activation_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-  activation_func(input, output);
+  Sigmoid sigmoid;
+  sigmoid(input, output);
 
   for (int i = 0; i < 10; ++i) {
     float actual = output->index(i);

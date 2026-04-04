@@ -3,7 +3,8 @@
 #include "nn/ops/activation.hpp"
 #include "check.hpp"
 #include "log.hpp"
-#include "ops/sigmoid.hpp"
+#include "nn/ops/relu.hpp"
+#include "nn/ops/sigmoid.hpp"
 #include "rt_type.hpp"
 #include "tensor.hpp"
 #include <cstdint>
@@ -14,6 +15,21 @@
 
 namespace ctl {
 namespace nn {
+
+
+
+// ActivationLayer
+ActivationFunc ApplySSEActivation(ActivationType act_type) {
+  switch (act_type) {
+  case ActivationType::ActivationRelu:
+    return [](sften input, sften output) { ReLU()(input, output); };
+  case ActivationType::ActivationSigmoid:
+    return [](sften input, sften output) { Sigmoid()(input, output); };
+  default:
+    LOG(FATAL) << "Unknown activation type: " << int32_t(act_type);
+    return nullptr;
+  }
+}
 
 std::string ActivationTypeToString(ActivationType type) {
   std::string activation_type_str;

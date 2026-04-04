@@ -66,6 +66,13 @@ enum ActivationType {
 std::string ActivationTypeToString(ActivationType type);
 
 /**
+ * @brief Factory function to get the SIMD-optimized activation function
+ * @param act_type The type of activation function to retrieve
+ * @return ActivationFunc Function object for the specified activation type
+ */
+ActivationFunc ApplySSEActivation(ActivationType act_type);
+
+/**
  * @brief Activation layer for applying non-linear functions
  * @details Applies element-wise activation functions to input tensors.
  * The layer supports multiple activation types selected at construction time.
