@@ -1,8 +1,5 @@
 #include "runtime/rt_ir.hpp"
-#include "core/tensor.hpp"
 #include "log.hpp"
-#include <iostream>
-#include <memory>
 #include <string>
 
 int main() {

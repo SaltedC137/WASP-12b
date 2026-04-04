@@ -12,7 +12,7 @@ A modern C++23 deep learning inference library featuring tensor operations, neur
 
 ## ⚠️ Development Status
 
-**Active Development** — Core tensor operations and runtime graph infrastructure are production-ready. The API may evolve as the architecture matures.
+**Active Development** — Core tensor operations and runtime graph infrastructure are production-ready. Neural network layer implementations are in progress. The API may evolve as the architecture matures.
 
 ---
 
@@ -33,16 +33,17 @@ A modern C++23 deep learning inference library featuring tensor operations, neur
 - **Memory-efficient weight loading** with optional data clearing
 
 ### 🧠 Neural Network Infrastructure
-- **Abstract layer base class** for custom implementations
-- **Factory pattern** for automatic layer registration
-- **Activation functions**: ReLU, Sigmoid, SiLU, HardSwish, HardSigmoid, ReLU6
-- **Extensible architecture** for Conv2D, Pooling, Linear layers (*in progress*)
+- **Abstract layer base classes** (`Layer`, `ParamLayer`, `NoneParamLayer`)
+- **Factory pattern** for automatic layer registration via `LayerRegister`
+- **Activation functors**: ReLU, Sigmoid with SSE/AVX2 optimization
+- **Registered layers**: Sigmoid, Softmax
+- **Extensible architecture** for Conv2D, Pooling, BatchNorm layers (*in progress*)
 
 ### 🛠️ Utilities
-- **Configurable logging** system (INFO, DEBUG, WARNING, ERROR, FATAL)
+- **Configurable logging** system (DEBUG, INFO, WARNING, ERROR, FATAL)
 - **CHECK macros** for runtime assertions
-- **Centralized thread configuration** with RAII guards
-- **Micro-benchmark framework** (ubench)
+- **Layer benchmarking** with RAII timing instrumentation
+- **Fast math utilities** (fmath) for SIMD-optimized transcendental functions
 
 ---
 
@@ -61,8 +62,10 @@ WASP-12b/
 │   │   │   ├── layer_factory.hpp   # Layer registry
 │   │   │   ├── param_layer.hpp     # Parameterized layers
 │   │   │   └── ops/
-│   │   │       ├── activation.hpp  # Activation layer
-│   │   │       └── sigmoid.hpp     # Sigmoid implementation
+│   │   │       ├── activation.hpp  # Activation layer base
+│   │   │       ├── relu.hpp        # ReLU functor + layer
+│   │   │       ├── sigmoid.hpp     # Sigmoid functor + layer
+│   │   │       └── softmax.hpp     # Softmax layer
 │   │   ├── runtime/
 │   │   │   ├── rt_ir.hpp           # Runtime computation graph
 │   │   │   ├── rt_op.hpp           # Runtime operator
@@ -73,13 +76,11 @@ WASP-12b/
 │   │   ├── pnnx/
 │   │   │   ├── ir.h                # PNNX IR format
 │   │   │   └── store_zip.hpp       # Compressed model storage
-│   │   ├── utils/
-│   │   │   ├── check.hpp           # CHECK assertion macros
-│   │   │   ├── log.hpp             # Logging utilities
-│   │   │   ├── thread_config.hpp   # Thread management
-│   │   │   ├── layer_bench.hpp     # Layer benchmarking
-│   │   │   └── fmath.hpp           # Fast math utilities
-│   │   └── status_code.hpp         # Status codes
+│   │   └── utils/
+│   │       ├── check.hpp           # CHECK assertion macros
+│   │       ├── log.hpp             # Logging utilities
+│   │       ├── layer_bench.hpp     # Layer benchmarking
+│   │       └── fmath.hpp           # Fast math utilities
 │   ├── src/                        # Implementations
 │   │   ├── core/                   # Tensor engine
 │   │   ├── nn/                     # Neural network layers
@@ -94,10 +95,13 @@ WASP-12b/
 │   │   ├── test_sigmoid.cpp        # Activation tests
 │   │   └── bench_calcu.cpp         # Benchmarks
 │   └── CMakeLists.txt
+├── trans/                          # PyTorch model conversion scripts
+│   ├── unet_model.py               # UNet model definition
+│   ├── unet_parts.py               # UNet building blocks
+│   └── to_pt.py                    # TorchScript export script
 ├── build/                          # Build directory
 ├── out/                            # Build artifacts
 │   └── bin/                        # Executables
-├── example/                        # Usage examples
 ├── CMakeLists.txt                  # Root configuration
 └── README.md
 ```
@@ -128,25 +132,12 @@ sudo apt-get install -y libarmadillo-dev cmake g++ libomp-dev
 git clone https://github.com/yourusername/WASP-12b.git
 cd WASP-12b
 
-# Configure and build using CMake presets
-cmake --preset linux
-cmake --build --preset linux-build -j$(nproc)
+# Configure and build
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc)
 
 # Run tests
-./DL4Cpp/test_tensor
-./DL4Cpp/test_sigmoid
-```
-
-#### macOS
-
-```bash
-# Install dependencies
-brew install armadillo cmake libomp
-
-# Build
-cd WASP-12b
-cmake --preset macos
-cmake --build --preset macos-build -j$(sysctl -n hw.ncpu)
+cd build && ctest --output-on-failure
 ```
 
 #### Windows (MSYS2 MinGW)
@@ -155,9 +146,9 @@ cmake --build --preset macos-build -j$(sysctl -n hw.ncpu)
 # Install dependencies (via MSYS2)
 pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-armadillo mingw-w64-x86_64-openmp
 
-# Configure and build using CMake presets
-cmake --preset windows-msys2
-cmake --build --preset default-build -j$(nproc)
+# Configure and build
+cmake -B build -G "MinGW Makefiles"
+cmake --build build -j$(nproc)
 ```
 
 #### Windows (vcpkg)
@@ -169,11 +160,10 @@ cd vcpkg
 .\bootstrap-vcpkg.bat
 .\vcpkg install armadillo:x64-windows
 
-# Build (note: vcpkg requires manual toolchain specification)
+# Build
 $env:VCPKG_ROOT="C:\path\to\vcpkg"
-mkdir build && cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
-cmake --build . --config Release
+cmake -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+cmake --build build --config Release
 ```
 
 ---
@@ -215,7 +205,8 @@ int main() {
 
 ```cpp
 #include "core/tensor.hpp"
-#include "nn/ops/activation.hpp"
+#include "nn/ops/relu.hpp"
+#include "nn/ops/sigmoid.hpp"
 
 using namespace ctl;
 using namespace ctl::nn;
@@ -225,13 +216,12 @@ int main() {
     auto output = std::make_shared<Tensor<float>>(1, 32, 32);
     input->Rand();
 
-    // Apply sigmoid activation
-    auto sigmoid_func = ApplySSEActivation(ActivationType::ActivationSigmoid);
-    sigmoid_func(input, output);
+    // Using functors (recommended for standalone usage)
+    ReLU relu;
+    relu(input, output);
 
-    // Apply ReLU activation
-    auto relu_func = ApplySSEActivation(ActivationType::ActivationRelu);
-    relu_func(input, output);
+    Sigmoid sigmoid;
+    sigmoid(input, output);
 
     return 0;
 }
@@ -266,27 +256,6 @@ int main() {
 }
 ```
 
-### Thread Configuration
-
-```cpp
-#include "utils/thread_config.hpp"
-
-using namespace ctl;
-
-int main() {
-    // Configure global thread count
-    ThreadConfig::getInstance().set_thread_count(8);
-
-    // Use RAII guard for scoped override
-    {
-        ThreadGuard guard(16);  // Temporarily use 16 threads
-        // ... parallel operations ...
-    }  // Automatically restores to 8 threads
-
-    return 0;
-}
-```
-
 ---
 
 ## Build Options
@@ -294,29 +263,19 @@ int main() {
 | Option | Default | Description |
 |--------|---------|-------------|
 | `DL4CPP_BUILD_TESTS` | `ON` | Build test executables |
-| `DL4CPP_BUILD_BENCHMARKS` | `ON` | Build benchmark executables |
 | `DL4CPP_BUILD_DOCS` | `OFF` | Build Doxygen documentation |
 
-### Minimal Build (No Tests/Benchmarks)
+### Minimal Build (No Tests)
 
 ```bash
-cmake --preset windows-msys2 -DDL4CPP_BUILD_TESTS=OFF -DDL4CPP_BUILD_BENCHMARKS=OFF
-cmake --build --preset default-build
+cmake -B build -DDL4CPP_BUILD_TESTS=OFF
+cmake --build build
 ```
 
 ### Generate Documentation
 
 ```bash
-# Windows (MSYS2)
-cmake --preset windows-msys2-docs
-cmake --build build --target docs
-
-# Linux
-cmake --preset linux-docs
-cmake --build build --target docs
-
-# macOS
-cmake --preset macos-docs
+cmake -B build -DDL4CPP_BUILD_DOCS=ON
 cmake --build build --target docs
 ```
 
@@ -327,19 +286,18 @@ cmake --build build --target docs
 ### ✅ Tensor Core
 - [x] Tensor construction (1D/2D/3D)
 - [x] Copy/Move semantics with proper memory management
-- [x] Element access (`index`, `posi`, `at`, `operator()`)
+- [x] Element access (`index`, `posi`, `at`)
 - [x] Shape manipulation (`Reshape`, `Flatten`)
 - [x] Padding operations
-- [x] Fill operations (`Fill`, `Ones`, `Rand`, `Zeros`)
+- [x] Fill operations (`Fill`, `One`, `Rand`)
 - [x] Transformation (`Transform`)
 - [x] Raw pointer access for interoperability
 - [x] External memory wrapping (zero-copy)
 
 ### ✅ Mathematical Operations
 - [x] Element-wise arithmetic (Add, Sub, Mul, Div)
-- [x] Broadcasting (per-channel bias/scale)
 - [x] Matrix multiplication (`Matmul`)
-- [x] Scalar operations
+- [x] Scalar operations (Add, Sub, Mul, Div)
 - [x] Exponential and clipping
 
 ### ✅ Linear Algebra
@@ -359,19 +317,23 @@ cmake --build build --target docs
 - [x] Forward execution with data propagation
 
 ### ✅ Neural Network Layers
-- [x] Layer base class
-- [x] Layer factory pattern
-- [x] Activation functions (ReLU, Sigmoid, SiLU, HardSwish, HardSigmoid, ReLU6)
+- [x] Layer base class (`Layer<float>`)
+- [x] Parameterized layer base class (`ParamLayer`)
+- [x] Layer factory pattern (`LayerRegister`)
+- [x] Sigmoid layer (registered: `nn.Sigmoid`)
+- [x] Softmax layer (registered: `F.softmax`, `nn.Softmax`)
+- [x] ReLU functor (layer registration in progress)
 - [ ] Conv2D layer (*in progress*)
+- [ ] BatchNorm2D layer (*planned*)
 - [ ] Pooling layers (*planned*)
-- [ ] Linear/FC layer (*planned*)
+- [ ] Concat layer (*planned*)
 
 ### ✅ Utilities
-- [x] CHECK assertion macros
-- [x] Logging system (5 levels)
+- [x] CHECK assertion macros (`CHECK`, `CHECK_EQ`, `CHECK_LT`, etc.)
+- [x] Logging system (5 levels: DEBUG, INFO, WARNING, ERROR, FATAL)
 - [x] OpenMP parallelization
-- [x] Thread configuration with RAII guards
-- [x] Micro-benchmark framework
+- [x] Layer benchmarking utilities
+- [x] SIMD-optimized math functions (SSE/AVX2 via fmath)
 
 ---
 
@@ -379,18 +341,19 @@ cmake --build build --target docs
 
 ### v0.2 (High Priority)
 - [ ] Conv2D layer implementation
-- [ ] Pooling layers (MaxPool, AvgPool)
-- [ ] Fully connected / Linear layer
-- [ ] Batch normalization
-- [ ] Softmax and LayerNorm
-- [ ] Complete runtime layer implementations
+- [ ] BatchNorm2D layer
+- [ ] MaxPool2D layer
+- [ ] ReLU layer registration
+- [ ] Upsample / ConvTranspose2D layer
+- [ ] Concat layer for skip connections
+- [ ] UNet model end-to-end inference
 
 ### v0.3 (Medium Priority)
 - [ ] Dropout layer
-- [ ] Model serialization (save/load)
+- [ ] Interpolate layer (bilinear, nearest-neighbor)
 - [ ] Comprehensive unit tests (90%+ coverage)
 - [ ] CI/CD pipeline integration
-- [ ] Performance profiling tools
+- [ ] Performance benchmarking suite
 
 ### Future Considerations
 - [ ] GPU acceleration (CUDA backend)
@@ -407,8 +370,8 @@ cmake --build build --target docs
 - **Memory Layout**: Row-major ordering for cache-friendly access patterns
 - **Zero-Copy Operations**: Functional interfaces use `std::shared_ptr` to minimize allocations
 - **Backend**: Armadillo provides optimized BLAS/LAPACK routines
-- **Thread Control**: Centralized `ThreadConfig` enables fine-grained parallelism management
 - **SIMD Optimization**: AVX2/FMA instructions enabled for supported compilers
+- **Activation Functions**: SSE/AVX2-optimized implementations via fmath library
 
 ---
 
@@ -426,42 +389,8 @@ Individual test executables:
 - `test_runtime` — Runtime graph execution
 - `test_attr` — Runtime attribute management
 - `test_param` — Runtime parameter handling
-- `test_sigmoid` — Sigmoid activation function (16 test cases)
+- `test_sigmoid` — Sigmoid activation function
 - `bench_calcu` — Performance benchmarks
-
----
-
-## Build Presets
-
-The project provides CMake presets for convenient cross-platform builds. List available presets:
-
-```bash
-cmake --list-presets
-```
-
-**Available presets:**
-
-| Preset | Platform | Description |
-|--------|----------|-------------|
-| `windows-msys2` | Windows | MSYS2 MinGW build |
-| `windows-msys2-docs` | Windows | MSYS2 + Doxygen |
-| `linux` | Linux | Standard Linux build |
-| `linux-docs` | Linux | Linux + Doxygen |
-| `macos` | macOS | Standard macOS build |
-| `macos-docs` | macOS | macOS + Doxygen |
-| `default` | Auto | Auto-selects platform preset |
-
-**Build commands:**
-
-```bash
-# Standard build (auto-detects platform)
-cmake --preset default
-cmake --build --preset default-build -j 32
-
-# Build with documentation
-cmake --preset windows-msys2-docs
-cmake --build build --target docs
-```
 
 ---
 
@@ -488,9 +417,10 @@ copies or substantial portions of the Software.
 ## Acknowledgments
 
 - [Armadillo](http://arma.sourceforge.net/) — Efficient linear algebra library
-- [PNNX](https://github.com/pnnxsoftware/pnnx) — PyTorch model export format
+- [PNNX](https://github.com/pnnx/pnnx) — PyTorch neural network exchange format
 - [ncnn](https://github.com/Tencent/ncnn) — Inspiration for runtime graph design
 - [KuiperInfer](https://github.com/zjhellofss/KuiperInfer) — Reference for inference engine architecture
+- [fmath](https://github.com/herumi/fmath) — Fast exponential functions
 
 ---
 
@@ -506,4 +436,4 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ---
 
-*Last updated: 2026-03-25*
+*Last updated: 2026-04-04*
