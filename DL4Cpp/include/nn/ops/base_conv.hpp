@@ -1,13 +1,19 @@
-
-
 #include "param_layer.hpp"
+#include "rt_op.hpp"
 #include "rt_type.hpp"
+#include "tensor.hpp"
+#include <armadillo>
+#include <cstdint>
+#include <memory>
+#include <utility>
+#include <vector>
+
 namespace ctl {
 namespace nn {
 
 enum class ConvType {
   OpConv = 0,
-  OpConvKnow = -1,
+  OpConvUnknow = -1,
   kOpDeconv = 1,
 };
 
@@ -21,7 +27,49 @@ public:
       uint32_t output_padding_w = 0, uint32_t dilation_h = 1,
       uint32_t dilation_w = 1);
 
+  static StatusCode CreateInstance(const std::shared_ptr<RuntimeOperator> &op,
+                                   std::shared_ptr<Layer<float>> &conv_layer);
 
+  StatusCode Forward(const std::vector<std::shared_ptr<ften>> &inputs,
+                     std::vector<std::shared_ptr<ften>> &outputs) override;
+
+private:
+  virtual void ComputeOutput(sften input, sften output, uint32_t kernel_h,
+                             uint32_t kernel_w, uint32_t kernel_count_group,
+                             uint32_t input_h, uint32_t input_w,
+                             uint32_t input_c_group, uint32_t output_h,
+                             uint32_t output_w, uint32_t group);
+
+  virtual std::pair<uint32_t, uint32_t>
+  ComputeOutputSize(uint32_t input_h, uint32_t input_w, uint32_t kernel_h,
+                    uint32_t kernel_w) const;
+
+public:
+  StatusCode Check(const std::vector<sften> &inputs,
+                   const std::vector<sften> &outputs) override;
+
+private:
+  virtual void InitIm2ColWeight();
+
+protected:
+  void AddBias(arma::fmat &output, uint32_t bias_index) const;
+
+protected:
+  uint32_t groups = 1;
+  bool use_bias = false;
+  uint32_t padding_h = 0;
+  uint32_t padding_w = 0;
+  uint32_t stride_h = 1;
+  uint32_t stride_w = 1;
+
+  uint32_t output_padding_h = 0;
+  uint32_t output_padding_w = 0;
+
+  uint32_t dilation_h = 1;
+  uint32_t dilation_w = 1;
+
+  ConvType conv_type = ConvType::OpConvUnknow;
+  std::vector<arma::fmat> kernel_matrix_arr_;
 };
 
 } // namespace nn
