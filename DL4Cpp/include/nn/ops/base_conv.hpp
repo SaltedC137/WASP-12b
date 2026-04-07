@@ -14,7 +14,7 @@ namespace nn {
 enum class ConvType {
   OpConv = 0,
   OpConvUnknow = -1,
-  kOpDeconv = 1,
+  OpDeconv = 1,
 };
 
 class BaseConvolutionLayer : public ParamLayer {
@@ -55,20 +55,20 @@ protected:
   void AddBias(arma::fmat &output, uint32_t bias_index) const;
 
 protected:
-  uint32_t groups = 1;
-  bool use_bias = false;
-  uint32_t padding_h = 0;
-  uint32_t padding_w = 0;
-  uint32_t stride_h = 1;
-  uint32_t stride_w = 1;
+  uint32_t groups_ = 1;
+  bool use_bias_ = false;
+  uint32_t padding_h_ = 0;
+  uint32_t padding_w_ = 0;
+  uint32_t stride_h_ = 1;
+  uint32_t stride_w_ = 1;
 
-  uint32_t output_padding_h = 0;
-  uint32_t output_padding_w = 0;
+  uint32_t output_padding_h_ = 0;
+  uint32_t output_padding_w_ = 0;
 
-  uint32_t dilation_h = 1;
-  uint32_t dilation_w = 1;
+  uint32_t dilation_h_ = 1;
+  uint32_t dilation_w_ = 1;
 
-  ConvType conv_type = ConvType::OpConvUnknow;
+  ConvType conv_type_ = ConvType::OpConvUnknow;
   std::vector<arma::fmat> kernel_matrix_arr_;
 };
 

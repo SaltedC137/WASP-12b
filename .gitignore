@@ -107,3 +107,9 @@ htmlcov/
 #doxygen
 html
 latex
+
+#command line interface tool
+.qwen
+.history
+
+
