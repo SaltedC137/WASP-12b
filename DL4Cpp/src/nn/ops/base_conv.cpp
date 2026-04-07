@@ -93,9 +93,50 @@ BaseConvolutionLayer::Forward(const std::vector<std::shared_ptr<ften>> &inputs,
   const uint32_t batch_size = inputs.size();
   const uint32_t kernel_count_group = kernel_count / groups_;
 
+#pragma omp parallel for num_thread(batch_size)
+  for (uint32_t i = 0; i < batch_size; i++) {
+    const std::shared_ptr<Tensor<float>> &input = inputs.at(i);
+    const uint32_t input_h = input->rows();
+    const uint32_t input_w = input->cols();
+    const uint32_t input_c = input->channels();
 
-  
+    CHECK(input_h > 0 && input_w > 0 && input_c > 0);
 
+    const auto &output_size =
+        ComputeOutputSize(input_h, input_w, input_h, input_c);
+
+    const uint32_t output_h = output_size.first;
+    const uint32_t output_w = output_size.second;
+    CHECK(output_h > 0 && output_w > 0)
+        << " output_h or output_w is zero" << i << "th";
+
+    std::shared_ptr<Tensor<float>> output_tensor = outputs.at(i);
+    if (output_tensor == nullptr || output_tensor->empty()) {
+      output_tensor =
+          std::make_shared<Tensor<float>>(kernel_count, output_h, output_w);
+      outputs.at(i) = output_tensor;
+    }
+
+    CHECK(output_tensor->rows() == output_h &&
+          output_tensor->cols() == output_w &&
+          output_tensor->channels() == kernel_count)
+        << "output tensor size is not correct in:" << i << "th";
+
+#pragma omp parallel for if (groups_ > 1)
+    for (uint32_t group = 0; group < groups_; ++group) {
+      if (groups_ != 1) {
+        CHECK(kernel_count % groups_ == 0);
+        CHECK(input_c % groups_ == 0);
+      }
+      const uint32_t channels_per_group = input_c / groups_;
+      CHECK(channels_per_group == kernel_channel)
+          << "The number of channel for the kernel "
+             "matrix and input tensor do not match";
+      ComputeOutput(input, output_tensor, kernel_h, kernel_w,
+                    kernel_count_group, input_h, input_w, channels_per_group,
+                    output_h, output_w, group);
+    }
+  }
   return StatusCode::Success;
 }
 
